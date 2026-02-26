@@ -4,6 +4,17 @@
 	let { children } = $props();
 </script>
 
+<svelte:head>
+	<meta property="og:site_name" content="CTA Smokers" />
+	<meta property="og:title" content="CTA Smokers" />
+	<meta property="og:description" content="Report smokers on Chicago's CTA train lines in real time." />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://cta-smokers-front-end.lagers-rancor-0o.workers.dev" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="CTA Smokers" />
+	<meta name="twitter:description" content="Report smokers on Chicago's CTA train lines in real time." />
+</svelte:head>
+
 <div class="min-h-screen bg-[#0d0d0d] flex flex-col">
 	<nav class="bg-[#111111] border-b border-[#c60c30] shadow-lg">
 		<div class="max-w-4xl mx-auto px-4 py-3">
