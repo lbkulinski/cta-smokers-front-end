@@ -96,7 +96,7 @@
 			fetchReportsForDate(today),
 			needsYesterday ? fetchReportsForDate(yesterday) : Promise.resolve(null)
 		]);
-		return { now, todayResult, yesterdayResult };
+		return { now, today, yesterday, needsYesterday, todayResult, yesterdayResult };
 	}
 
 	async function load() {
@@ -123,7 +123,7 @@
 	async function refresh() {
 		refreshing = true;
 		try {
-			const { now, todayResult, yesterdayResult } = await fetchFirstPages();
+			const { now, today, yesterday, needsYesterday, todayResult, yesterdayResult } = await fetchFirstPages();
 			if (!todayCursor && todayResult.status === 'fulfilled') {
 				todayCursor = todayResult.value?.nextCursor ?? undefined;
 			}
@@ -134,7 +134,18 @@
 				...(todayResult.status === 'fulfilled' ? todayResult.value?.reports ?? [] : []),
 				...(yesterdayResult.status === 'fulfilled' ? yesterdayResult.value?.reports ?? [] : [])
 			];
-			reports = mergeReports(reports, incoming, now);
+			// Dates where page 1 has no cursor are the complete dataset for that date.
+			// Remove any client-side reports for those dates that the API no longer returns.
+			const returnedIds = new Set(incoming.map((r) => r.reportId));
+			const completeDates = new Set<string>();
+			if (todayResult.status === 'fulfilled' && !todayResult.value?.nextCursor) {
+				completeDates.add(today);
+			}
+			if (needsYesterday && yesterdayResult.status === 'fulfilled' && !yesterdayResult.value?.nextCursor) {
+				completeDates.add(yesterday);
+			}
+			const base = reports.filter((r) => !completeDates.has(r.date) || returnedIds.has(r.reportId));
+			reports = mergeReports(base, incoming, now);
 			lastUpdated = now;
 		} finally {
 			refreshing = false;
