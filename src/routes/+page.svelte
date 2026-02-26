@@ -6,7 +6,7 @@
 	import { LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES } from '$lib/constants';
 
 	let reports: SmokingReportResponse[] = $state([]);
-	let stationMap = $state<Map<string, string>>(new Map());
+	let stationMap = $state<Record<string, string>>({});
 	let loading = $state(true);
 	let refreshing = $state(false);
 	let error: string | null = $state(null);
@@ -35,7 +35,7 @@
 	}
 
 	function stationName(id: string): string {
-		return stationMap.get(id) ?? id;
+		return stationMap[id] ?? id;
 	}
 
 	function timeAgo(iso: string): string {
@@ -71,7 +71,7 @@
 	onMount(async () => {
 		const [, stations] = await Promise.allSettled([load(), fetchStations()]);
 		if (stations.status === 'fulfilled') {
-			stationMap = new Map(stations.value.map((s) => [s.id, s.name]));
+			stationMap = Object.fromEntries(stations.value.map((s) => [s.id, s.name]));
 		}
 		interval = setInterval(() => load(true), 30_000);
 	});
