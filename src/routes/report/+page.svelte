@@ -124,7 +124,7 @@
 		</div>
 	{/if}
 
-	<form onsubmit={handleSubmit} class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-6 space-y-5" novalidate>
+	<form onsubmit={handleSubmit} class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-4 sm:p-6 space-y-4 sm:space-y-5" novalidate>
 		{#if validationError}
 			<p class="text-sm text-[#f87171] bg-[#1a0808] border border-[#5a1010] rounded-lg px-3 py-2">{validationError}</p>
 		{/if}
@@ -142,7 +142,7 @@
 				bind:value={line}
 				onchange={() => { destinationId = ''; nextStationId = ''; }}
 				required
-				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
 			>
 				<option value="">Select a line…</option>
 				{#each lines as l}
@@ -192,7 +192,7 @@
 				bind:value={carNumber}
 				placeholder="e.g. 5432"
 				required
-				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
 			/>
 		</div>
 
@@ -204,14 +204,14 @@
 				min="0"
 				bind:value={runNumber}
 				placeholder="e.g. 101"
-				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
 			/>
 		</div>
 
 		<button
 			type="submit"
 			disabled={submitting}
-			class="w-full bg-[#c60c30] text-white font-semibold py-2.5 rounded-lg hover:bg-[#a00828] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+			class="w-full bg-[#c60c30] text-white font-semibold py-3 text-base rounded-lg hover:bg-[#a00828] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
 		>
 			{submitting ? 'Submitting…' : 'Submit Report'}
 		</button>
