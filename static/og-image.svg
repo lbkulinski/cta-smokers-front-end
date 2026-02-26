@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#0d0d0d"/>
+  <rect width="1200" height="8" fill="#c60c30"/>
+  <path d="M480 510 Q510 415 480 330 Q450 245 480 120" stroke="#c60c30" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.9"/>
+  <path d="M600 510 Q630 415 600 330 Q570 245 600 120" stroke="#c60c30" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.9"/>
+  <path d="M720 510 Q750 415 720 330 Q690 245 720 120" stroke="#c60c30" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.9"/>
+  <text x="600" y="580" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="48" fill="#e5e5e5" letter-spacing="3">CTA Smokers</text>
+</svg>
