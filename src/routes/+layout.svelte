@@ -4,13 +4,13 @@
 	let { children } = $props();
 </script>
 
-<div class="min-h-screen bg-gray-50 flex flex-col">
-	<nav class="bg-[#c60c30] text-white shadow-md">
+<div class="min-h-screen bg-[#0d0d0d] flex flex-col">
+	<nav class="bg-[#111111] border-b border-[#c60c30] shadow-lg">
 		<div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-			<a href="/" class="text-xl font-bold tracking-tight hover:opacity-90">CTA Smokers</a>
-			<div class="flex gap-6 text-sm font-medium">
-				<a href="/" class="hover:underline hover:opacity-90">Home</a>
-				<a href="/report" class="hover:underline hover:opacity-90">Report a Smoker</a>
+			<a href="/" class="text-xl font-bold tracking-tight text-[#c60c30] hover:text-[#e8102e] transition-colors">CTA Smokers</a>
+			<div class="flex gap-6 text-sm font-medium text-[#aaaaaa]">
+				<a href="/" class="hover:text-white transition-colors">Home</a>
+				<a href="/report" class="hover:text-white transition-colors">Report a Smoker</a>
 			</div>
 		</div>
 	</nav>

@@ -89,10 +89,10 @@
 </svelte:head>
 
 <div class="flex items-center justify-between mb-4">
-	<h1 class="text-2xl font-bold text-gray-900">Today's Reports</h1>
-	<div class="flex items-center gap-2 text-sm text-gray-500">
+	<h1 class="text-2xl font-bold text-[#e5e5e5]">Today's Reports</h1>
+	<div class="flex items-center gap-2 text-sm text-[#666]">
 		{#if refreshing}
-			<svg class="animate-spin h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+			<svg class="animate-spin h-4 w-4 text-[#555]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
 				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
 				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
 			</svg>
@@ -106,15 +106,15 @@
 {#if loading}
 	<div class="space-y-4">
 		{#each [1, 2, 3] as _}
-			<div class="animate-pulse bg-white rounded-xl shadow p-4">
-				<div class="h-6 bg-gray-200 rounded w-32 mb-3"></div>
-				<div class="h-4 bg-gray-100 rounded w-24 mb-2"></div>
-				<div class="h-16 bg-gray-100 rounded"></div>
+			<div class="animate-pulse bg-[#171717] rounded-xl border border-[#2a2a2a] p-4">
+				<div class="h-6 bg-[#2a2a2a] rounded w-32 mb-3"></div>
+				<div class="h-4 bg-[#222] rounded w-24 mb-2"></div>
+				<div class="h-16 bg-[#222] rounded"></div>
 			</div>
 		{/each}
 	</div>
 {:else if error}
-	<div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4">
+	<div class="bg-[#1a0808] border border-[#5a1010] text-[#f87171] rounded-xl p-4">
 		<p class="font-semibold">Error loading reports</p>
 		<p class="text-sm mt-1">{error}</p>
 		<button
@@ -125,7 +125,7 @@
 		</button>
 	</div>
 {:else if reports.length === 0}
-	<div class="bg-white rounded-xl shadow p-8 text-center text-gray-500">
+	<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-8 text-center text-[#666]">
 		<p class="text-lg">No reports yet today.</p>
 		<p class="text-sm mt-1">Be the first to <a href="/report" class="text-[#c60c30] underline">report a smoker</a>.</p>
 	</div>
@@ -136,26 +136,26 @@
 			{@const bg = LINE_COLORS[line]}
 			{@const fg = LINE_TEXT_COLORS[line]}
 			{@const total = [...lineMap.values()].reduce((s, a) => s + a.length, 0)}
-			<div class="bg-white rounded-xl shadow overflow-hidden">
+			<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl overflow-hidden">
 				<div class="px-4 py-3 flex items-center gap-3" style="background-color: {bg}; color: {fg};">
 					<span class="font-bold text-lg">{LINE_DISPLAY_NAMES[line]}</span>
 					<span class="text-sm opacity-80">({total} report{total !== 1 ? 's' : ''})</span>
 				</div>
-				<div class="divide-y divide-gray-100">
+				<div class="divide-y divide-[#2a2a2a]">
 					{#each [...lineMap.entries()] as [destinationId, destReports]}
 						<div class="px-4 py-3">
-							<h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+							<h3 class="text-sm font-semibold text-[#888] uppercase tracking-wide mb-2">
 								→ {stationName(destinationId)}
 							</h3>
 							<div class="space-y-2">
 								{#each destReports as report}
-									<div class="flex flex-wrap gap-x-4 gap-y-1 items-center text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2">
-										<span><span class="font-medium">Next:</span> {stationName(report.nextStationId)}</span>
-										<span><span class="font-medium">Car:</span> {report.carNumber}</span>
+									<div class="flex flex-wrap gap-x-4 gap-y-1 items-center text-sm text-[#ccc] bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2">
+										<span><span class="font-medium text-[#e5e5e5]">Next:</span> {stationName(report.nextStationId)}</span>
+										<span><span class="font-medium text-[#e5e5e5]">Car:</span> {report.carNumber}</span>
 										{#if report.runNumber}
-											<span><span class="font-medium">Run:</span> {report.runNumber}</span>
+											<span><span class="font-medium text-[#e5e5e5]">Run:</span> {report.runNumber}</span>
 										{/if}
-										<span class="ml-auto text-xs text-gray-400">{timeAgo(report.reportedAt)}</span>
+										<span class="ml-auto text-xs text-[#555]">{timeAgo(report.reportedAt)}</span>
 									</div>
 								{/each}
 							</div>

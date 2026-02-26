@@ -7,10 +7,27 @@
 
 	const lines = Object.values(Line);
 
+	const LINE_KEYWORDS: Record<Line, string> = {
+		[Line.RED]: 'red',
+		[Line.BLUE]: 'blue',
+		[Line.BROWN]: 'brown',
+		[Line.GREEN]: 'green',
+		[Line.ORANGE]: 'orange',
+		[Line.PURPLE]: 'purple',
+		[Line.PINK]: 'pink',
+		[Line.YELLOW]: 'yellow'
+	};
+
 	let stations = $state<Station[]>([]);
 	let stationsError: string | null = $state(null);
 
 	let line = $state<Line | ''>('');
+	let filteredStations = $derived(
+		line
+			? stations.filter((s) => s.name.toLowerCase().includes(LINE_KEYWORDS[line as Line]))
+			: stations
+	);
+
 	let destinationId = $state('');
 	let nextStationId = $state('');
 	let carNumber = $state('');
@@ -88,39 +105,40 @@
 </svelte:head>
 
 <div class="max-w-lg mx-auto">
-	<h1 class="text-2xl font-bold text-gray-900 mb-6">Report a Smoker</h1>
+	<h1 class="text-2xl font-bold text-[#e5e5e5] mb-6">Report a Smoker</h1>
 
 	{#if successId}
-		<div class="bg-green-50 border border-green-200 text-green-800 rounded-xl p-5 mb-6">
+		<div class="bg-[#0a1a0a] border border-[#1a4a1a] text-[#6ee77a] rounded-xl p-5 mb-6">
 			<p class="font-semibold text-lg">Report submitted!</p>
-			<p class="text-sm mt-1">Report ID: <code class="font-mono bg-green-100 px-1 rounded">{successId}</code></p>
+			<p class="text-sm mt-1 text-[#5acc66]">Report ID: <code class="font-mono bg-[#0d220d] px-1 rounded">{successId}</code></p>
 			<button
 				onclick={() => { successId = null; }}
-				class="mt-3 text-sm text-green-700 underline hover:no-underline"
+				class="mt-3 text-sm text-[#5acc66] underline hover:no-underline"
 			>
 				Submit another report
 			</button>
 		</div>
 	{/if}
 
-	<form onsubmit={handleSubmit} class="bg-white rounded-xl shadow p-6 space-y-5" novalidate>
+	<form onsubmit={handleSubmit} class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-6 space-y-5" novalidate>
 		{#if validationError}
-			<p class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{validationError}</p>
+			<p class="text-sm text-[#f87171] bg-[#1a0808] border border-[#5a1010] rounded-lg px-3 py-2">{validationError}</p>
 		{/if}
 		{#if error}
-			<p class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+			<p class="text-sm text-[#f87171] bg-[#1a0808] border border-[#5a1010] rounded-lg px-3 py-2">{error}</p>
 		{/if}
 		{#if stationsError}
-			<p class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">Could not load station list: {stationsError}</p>
+			<p class="text-sm text-[#f87171] bg-[#1a0808] border border-[#5a1010] rounded-lg px-3 py-2">Could not load station list: {stationsError}</p>
 		{/if}
 
 		<div>
-			<label for="line" class="block text-sm font-medium text-gray-700 mb-1">Train Line <span class="text-red-500">*</span></label>
+			<label for="line" class="block text-sm font-medium text-[#aaa] mb-1">Train Line <span class="text-[#c60c30]">*</span></label>
 			<select
 				id="line"
 				bind:value={line}
+				onchange={() => { destinationId = ''; nextStationId = ''; }}
 				required
-				class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
 			>
 				<option value="">Select a line…</option>
 				{#each lines as l}
@@ -130,39 +148,39 @@
 		</div>
 
 		<div>
-			<label for="destinationId" class="block text-sm font-medium text-gray-700 mb-1">Destination <span class="text-red-500">*</span></label>
+			<label for="destinationId" class="block text-sm font-medium text-[#aaa] mb-1">Destination <span class="text-[#c60c30]">*</span></label>
 			<select
 				id="destinationId"
 				bind:value={destinationId}
 				required
-				disabled={stations.length === 0}
-				class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+				disabled={stations.length === 0 || !line}
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:opacity-40"
 			>
-				<option value="">{stations.length === 0 ? 'Loading stations…' : 'Select a destination…'}</option>
-				{#each stations as station}
+				<option value="">{stations.length === 0 ? 'Loading stations…' : !line ? 'Select a line first…' : 'Select a destination…'}</option>
+				{#each filteredStations as station}
 					<option value={station.id}>{station.name}</option>
 				{/each}
 			</select>
 		</div>
 
 		<div>
-			<label for="nextStationId" class="block text-sm font-medium text-gray-700 mb-1">Next Station <span class="text-red-500">*</span></label>
+			<label for="nextStationId" class="block text-sm font-medium text-[#aaa] mb-1">Next Station <span class="text-[#c60c30]">*</span></label>
 			<select
 				id="nextStationId"
 				bind:value={nextStationId}
 				required
-				disabled={stations.length === 0}
-				class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+				disabled={stations.length === 0 || !line}
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:opacity-40"
 			>
-				<option value="">{stations.length === 0 ? 'Loading stations…' : 'Select next station…'}</option>
-				{#each stations as station}
+				<option value="">{stations.length === 0 ? 'Loading stations…' : !line ? 'Select a line first…' : 'Select next station…'}</option>
+				{#each filteredStations as station}
 					<option value={station.id}>{station.name}</option>
 				{/each}
 			</select>
 		</div>
 
 		<div>
-			<label for="carNumber" class="block text-sm font-medium text-gray-700 mb-1">Car Number <span class="text-red-500">*</span></label>
+			<label for="carNumber" class="block text-sm font-medium text-[#aaa] mb-1">Car Number <span class="text-[#c60c30]">*</span></label>
 			<input
 				id="carNumber"
 				type="number"
@@ -170,26 +188,26 @@
 				bind:value={carNumber}
 				placeholder="e.g. 5432"
 				required
-				class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
 			/>
 		</div>
 
 		<div>
-			<label for="runNumber" class="block text-sm font-medium text-gray-700 mb-1">Run Number <span class="text-gray-400 font-normal">(optional)</span></label>
+			<label for="runNumber" class="block text-sm font-medium text-[#aaa] mb-1">Run Number <span class="text-[#555] font-normal">(optional)</span></label>
 			<input
 				id="runNumber"
 				type="number"
 				min="0"
 				bind:value={runNumber}
 				placeholder="e.g. 101"
-				class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
 			/>
 		</div>
 
 		<button
 			type="submit"
 			disabled={submitting}
-			class="w-full bg-[#c60c30] text-white font-semibold py-2.5 rounded-lg hover:bg-[#a00828] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+			class="w-full bg-[#c60c30] text-white font-semibold py-2.5 rounded-lg hover:bg-[#a00828] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
 		>
 			{submitting ? 'Submitting…' : 'Submit Report'}
 		</button>
