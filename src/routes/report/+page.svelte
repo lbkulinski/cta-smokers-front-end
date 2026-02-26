@@ -158,9 +158,11 @@
 			<label for="carNumber" class="block text-sm font-medium text-[#aaa] mb-1">Car Number <span class="text-[#c60c30]">*</span></label>
 			<input
 				id="carNumber"
-				type="number"
-				min="0"
+				type="text"
+				inputmode="numeric"
+				pattern="[0-9]*"
 				bind:value={carNumber}
+				oninput={() => { carNumber = carNumber.replace(/\D/g, ''); }}
 				placeholder="e.g. 5432"
 				required
 				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
@@ -171,9 +173,11 @@
 			<label for="runNumber" class="block text-sm font-medium text-[#aaa] mb-1">Run Number <span class="text-[#555] font-normal">(optional)</span></label>
 			<input
 				id="runNumber"
-				type="number"
-				min="0"
+				type="text"
+				inputmode="numeric"
+				pattern="[0-9]*"
 				bind:value={runNumber}
+				oninput={() => { runNumber = runNumber.replace(/\D/g, ''); }}
 				placeholder="e.g. 101"
 				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
 			/>
