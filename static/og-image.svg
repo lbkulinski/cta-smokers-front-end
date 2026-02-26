@@ -7,19 +7,20 @@
   <!-- No-smoking circle, centered at (600, 265) r=170 -->
   <circle cx="600" cy="265" r="170" fill="#161616" stroke="#c60c30" stroke-width="16"/>
 
-  <!-- Cigarette body (white paper) -->
-  <rect x="462" y="252" width="170" height="26" rx="3" fill="#f0ece0"/>
-  <!-- Filter end (tan/orange) -->
-  <rect x="632" y="252" width="42" height="26" rx="3" fill="#c4814a"/>
-  <!-- Lit tip glow -->
-  <ellipse cx="464" cy="265" rx="7" ry="10" fill="#ff7722" opacity="0.95"/>
-  <ellipse cx="464" cy="265" rx="3.5" ry="5.5" fill="#ffcc55"/>
+  <!-- Cigarette: total width 220, centered at x=600 → x=490 to x=710 -->
+  <!-- Body (white paper): x=490 to x=660 -->
+  <rect x="490" y="252" width="170" height="26" rx="3" fill="#f0ece0"/>
+  <!-- Filter (tan): x=660 to x=710 -->
+  <rect x="660" y="252" width="50" height="26" rx="3" fill="#c4814a"/>
+  <!-- Lit tip at left end (x=490) -->
+  <ellipse cx="492" cy="265" rx="7" ry="10" fill="#ff7722" opacity="0.95"/>
+  <ellipse cx="492" cy="265" rx="3.5" ry="5.5" fill="#ffcc55"/>
 
-  <!-- Smoke wisps above lit end -->
-  <path d="M460 244 Q467 231 460 218 Q453 205 459 192" stroke="#aaaaaa" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.55"/>
-  <path d="M469 241 Q478 226 471 211 Q464 196 470 181" stroke="#aaaaaa" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.35"/>
+  <!-- Smoke wisps rising from lit end -->
+  <path d="M490 244 Q497 231 490 218 Q483 205 489 192" stroke="#aaaaaa" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.55"/>
+  <path d="M500 241 Q509 226 502 211 Q495 196 501 181" stroke="#aaaaaa" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.35"/>
 
-  <!-- Diagonal slash (upper-left to lower-right at 45°) drawn on top -->
+  <!-- Diagonal slash at 45°: from (480,145) to (720,385), passes through center (600,265) -->
   <line x1="480" y1="145" x2="720" y2="385" stroke="#c60c30" stroke-width="16" stroke-linecap="round"/>
 
   <!-- Title -->

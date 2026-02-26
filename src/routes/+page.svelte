@@ -7,6 +7,16 @@
 	import { LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES } from '$lib/constants';
 	import { getStationName } from '$lib/stations';
 
+	type CarGroup = {
+		carNumber: string;
+		runNumber?: string;
+		nextStationId: string;
+		count: number;
+		latestAt: string;
+	};
+
+	const LINE_ORDER = [Line.RED, Line.BLUE, Line.BROWN, Line.GREEN, Line.ORANGE, Line.PURPLE, Line.PINK, Line.YELLOW];
+
 	let reports: SmokingReportResponse[] = $state([]);
 	let loading = $state(true);
 	let refreshing = $state(false);
@@ -16,7 +26,12 @@
 	let todayCursor = $state<string | undefined>(undefined);
 	let yesterdayCursor = $state<string | undefined>(undefined);
 	let hasMore = $derived(!!todayCursor || !!yesterdayCursor);
+	let selectedLine = $state<Line | null>(null);
 	let interval: ReturnType<typeof setInterval>;
+
+	function toggleLine(line: Line) {
+		selectedLine = selectedLine === line ? null : line;
+	}
 
 	function dates() {
 		const now = new Date();
@@ -35,15 +50,30 @@
 			.sort((a, b) => new Date(b.reportedAt).getTime() - new Date(a.reportedAt).getTime());
 	}
 
-	type GroupedReports = Map<Line, Map<string, SmokingReportResponse[]>>;
-
-	function groupReports(data: SmokingReportResponse[]): GroupedReports {
-		const grouped: GroupedReports = new Map();
+	function groupReports(data: SmokingReportResponse[]): Map<Line, Map<string, CarGroup[]>> {
+		const grouped = new Map<Line, Map<string, CarGroup[]>>();
 		for (const report of data) {
 			if (!grouped.has(report.line)) grouped.set(report.line, new Map());
 			const lineGroup = grouped.get(report.line)!;
 			if (!lineGroup.has(report.destinationId)) lineGroup.set(report.destinationId, []);
-			lineGroup.get(report.destinationId)!.push(report);
+			const carGroups = lineGroup.get(report.destinationId)!;
+			const existing = carGroups.find((g) => g.carNumber === report.carNumber);
+			if (existing) {
+				existing.count++;
+				if (new Date(report.reportedAt) > new Date(existing.latestAt)) {
+					existing.latestAt = report.reportedAt;
+					existing.nextStationId = report.nextStationId;
+					if (report.runNumber) existing.runNumber = report.runNumber;
+				}
+			} else {
+				carGroups.push({
+					carNumber: report.carNumber,
+					runNumber: report.runNumber,
+					nextStationId: report.nextStationId,
+					count: 1,
+					latestAt: report.reportedAt
+				});
+			}
 		}
 		return grouped;
 	}
@@ -69,14 +99,13 @@
 		return { now, todayResult, yesterdayResult };
 	}
 
-	// Hard load: resets reports and cursors (used on navigation)
 	async function load() {
 		loading = true;
 		error = null;
 		try {
 			const { now, todayResult, yesterdayResult } = await fetchFirstPages();
-			todayCursor = todayResult.status === 'fulfilled' ? todayResult.value?.nextCursor : undefined;
-			yesterdayCursor = yesterdayResult.status === 'fulfilled' ? yesterdayResult.value?.nextCursor : undefined;
+			todayCursor = todayResult.status === 'fulfilled' ? (todayResult.value?.nextCursor ?? undefined) : undefined;
+			yesterdayCursor = yesterdayResult.status === 'fulfilled' ? (yesterdayResult.value?.nextCursor ?? undefined) : undefined;
 			const incoming = [
 				...(todayResult.status === 'fulfilled' ? todayResult.value?.reports ?? [] : []),
 				...(yesterdayResult.status === 'fulfilled' ? yesterdayResult.value?.reports ?? [] : [])
@@ -91,11 +120,16 @@
 		}
 	}
 
-	// Soft refresh: merges new page-1 data without resetting cursors (used by interval/visibility)
 	async function refresh() {
 		refreshing = true;
 		try {
 			const { now, todayResult, yesterdayResult } = await fetchFirstPages();
+			if (!todayCursor && todayResult.status === 'fulfilled') {
+				todayCursor = todayResult.value?.nextCursor ?? undefined;
+			}
+			if (!yesterdayCursor && yesterdayResult.status === 'fulfilled') {
+				yesterdayCursor = yesterdayResult.value?.nextCursor ?? undefined;
+			}
 			const incoming = [
 				...(todayResult.status === 'fulfilled' ? todayResult.value?.reports ?? [] : []),
 				...(yesterdayResult.status === 'fulfilled' ? yesterdayResult.value?.reports ?? [] : [])
@@ -115,19 +149,16 @@
 				todayCursor ? fetchReportsForDate(today, todayCursor) : Promise.resolve(null),
 				yesterdayCursor ? fetchReportsForDate(yesterday, yesterdayCursor) : Promise.resolve(null)
 			]);
-
 			if (todayResult.status === 'fulfilled' && todayResult.value) {
-				todayCursor = todayResult.value.nextCursor;
+				todayCursor = todayResult.value.nextCursor ?? undefined;
 			}
 			if (yesterdayResult.status === 'fulfilled' && yesterdayResult.value) {
-				yesterdayCursor = yesterdayResult.value.nextCursor;
+				yesterdayCursor = yesterdayResult.value.nextCursor ?? undefined;
 			}
-
 			const incoming = [
 				...(todayResult.status === 'fulfilled' && todayResult.value ? todayResult.value.reports : []),
 				...(yesterdayResult.status === 'fulfilled' && yesterdayResult.value ? yesterdayResult.value.reports : [])
 			];
-
 			reports = mergeReports(reports, incoming, now);
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load more reports';
@@ -158,7 +189,9 @@
 		window.removeEventListener('focus', onVisible);
 	});
 
-	let grouped = $derived(groupReports(reports));
+	let availableLines = $derived(LINE_ORDER.filter((l) => reports.some((r) => r.line === l)));
+	let filteredReports = $derived(selectedLine === null ? reports : reports.filter((r) => r.line === selectedLine));
+	let grouped = $derived(groupReports(filteredReports));
 	let lineOrder = $derived([...grouped.keys()]);
 </script>
 
@@ -176,7 +209,7 @@
 			</svg>
 		{/if}
 		{#if lastUpdated}
-			<span>Last updated {formatTime(lastUpdated)}</span>
+			<span>Updated {formatTime(lastUpdated)}</span>
 		{/if}
 	</div>
 </div>
@@ -203,49 +236,81 @@
 		<p class="text-sm mt-1">Be the first to <a href="/report" class="text-[#c60c30] underline">report a smoker</a>.</p>
 	</div>
 {:else}
-	<div class="space-y-6">
-		{#each lineOrder as line}
-			{@const lineMap = grouped.get(line)!}
-			{@const bg = LINE_COLORS[line]}
-			{@const fg = LINE_TEXT_COLORS[line]}
-			{@const total = [...lineMap.values()].reduce((s, a) => s + a.length, 0)}
-			<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl overflow-hidden">
-				<div class="px-4 py-3 flex items-center gap-3" style="background-color: {bg}; color: {fg};">
-					<span class="font-bold text-lg">{LINE_DISPLAY_NAMES[line]}</span>
-					<span class="text-sm opacity-80">({total} report{total !== 1 ? 's' : ''})</span>
-				</div>
-				<div class="divide-y divide-[#2a2a2a]">
-					{#each [...lineMap.entries()] as [destinationId, destReports]}
-						<div class="px-4 py-3">
-							<h3 class="text-sm font-semibold text-[#888] uppercase tracking-wide mb-2">
-								→ {getStationName(destinationId)}
-							</h3>
-							<div class="space-y-2">
-								{#each destReports as report}
-									<div class="flex flex-wrap gap-x-4 gap-y-1 items-center text-sm text-[#ccc] bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2">
-										<span><span class="font-medium text-[#e5e5e5]">Next:</span> {getStationName(report.nextStationId)}</span>
-										<span><span class="font-medium text-[#e5e5e5]">Car:</span> {report.carNumber}</span>
-										{#if report.runNumber}
-											<span><span class="font-medium text-[#e5e5e5]">Run:</span> {report.runNumber}</span>
-										{/if}
-										<span class="ml-auto text-xs text-[#555]">{timeAgo(report.reportedAt)}</span>
-									</div>
-								{/each}
-							</div>
-						</div>
-					{/each}
-				</div>
-			</div>
-		{/each}
+	{#if availableLines.length > 1}
+		<div class="flex gap-2 overflow-x-auto pb-3 mb-4" style="scrollbar-width: none; -webkit-overflow-scrolling: touch;">
+			{#each availableLines as line}
+				<button
+					onclick={() => toggleLine(line)}
+					class="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-semibold transition-opacity"
+					style="background-color: {LINE_COLORS[line]}; color: {LINE_TEXT_COLORS[line]}; opacity: {selectedLine === null || selectedLine === line ? 1 : 0.35};"
+				>
+					{LINE_DISPLAY_NAMES[line]}
+				</button>
+			{/each}
+		</div>
+	{/if}
 
-		{#if hasMore}
-			<button
-				onclick={loadMore}
-				disabled={loadingMore}
-				class="w-full py-3 rounded-xl border border-[#2a2a2a] text-sm text-[#888] hover:text-[#e5e5e5] hover:border-[#444] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-			>
-				{loadingMore ? 'Loading…' : 'Load more'}
-			</button>
-		{/if}
-	</div>
+	{#if lineOrder.length === 0}
+		<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-8 text-center text-[#666]">
+			<p>No {LINE_DISPLAY_NAMES[selectedLine!]} reports right now.</p>
+			<button onclick={() => (selectedLine = null)} class="mt-2 text-sm text-[#c60c30] underline">Show all lines</button>
+		</div>
+	{:else}
+		<div class="space-y-6">
+			{#each lineOrder as line}
+				{@const lineMap = grouped.get(line)!}
+				{@const bg = LINE_COLORS[line]}
+				{@const fg = LINE_TEXT_COLORS[line]}
+				{@const total = [...lineMap.values()].flatMap((v) => v).reduce((s, g) => s + g.count, 0)}
+				<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl overflow-hidden">
+					<div class="px-4 py-3 flex items-center gap-3" style="background-color: {bg}; color: {fg};">
+						<span class="font-bold text-lg">{LINE_DISPLAY_NAMES[line]}</span>
+						<span class="text-sm opacity-80">({total} report{total !== 1 ? 's' : ''})</span>
+					</div>
+					<div class="divide-y divide-[#2a2a2a]">
+						{#each [...lineMap.entries()] as [destinationId, carGroups]}
+							<div class="px-4 py-3">
+								<h3 class="text-xs font-semibold text-[#666] uppercase tracking-wider mb-2.5">
+									→ {getStationName(destinationId)}
+								</h3>
+								<div class="space-y-2">
+									{#each carGroups as group}
+										<div class="flex items-center gap-3 text-sm bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2.5">
+											<div class="flex-1 min-w-0">
+												<div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+													<span class="font-semibold text-[#e5e5e5]">Car {group.carNumber}</span>
+													{#if group.runNumber}
+														<span class="text-[#666] text-xs">Run {group.runNumber}</span>
+													{/if}
+												</div>
+												<div class="text-[#777] text-xs mt-0.5">Next: {getStationName(group.nextStationId)}</div>
+											</div>
+											<div class="flex-shrink-0 flex flex-col items-end gap-1">
+												{#if group.count > 1}
+													<span class="bg-[#c60c30] text-white text-xs font-bold px-2 py-0.5 rounded-full leading-none">
+														{group.count}×
+													</span>
+												{/if}
+												<span class="text-xs text-[#555]">{timeAgo(group.latestAt)}</span>
+											</div>
+										</div>
+									{/each}
+								</div>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/each}
+
+			{#if hasMore}
+				<button
+					onclick={loadMore}
+					disabled={loadingMore}
+					class="w-full py-3 rounded-xl border border-[#2a2a2a] text-sm text-[#888] hover:text-[#e5e5e5] hover:border-[#444] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+				>
+					{loadingMore ? 'Loading…' : 'Load more'}
+				</button>
+			{/if}
+		</div>
+	{/if}
 {/if}
