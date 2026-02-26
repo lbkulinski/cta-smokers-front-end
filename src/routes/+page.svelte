@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { fetchTop25Today, fetchStations } from '$lib/api';
+	import { afterNavigate } from '$app/navigation';
+	import { fetchReportsForDate, fetchStations } from '$lib/api';
 	import type { SmokingReportResponse } from '$lib/types';
 	import { Line } from '$lib/types';
 	import { LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES } from '$lib/constants';
@@ -9,33 +10,46 @@
 	let stationMap = $state<Record<string, string>>({});
 	let loading = $state(true);
 	let refreshing = $state(false);
+	let loadingMore = $state(false);
 	let error: string | null = $state(null);
 	let lastUpdated: Date | null = $state(null);
+	let todayCursor = $state<string | undefined>(undefined);
+	let yesterdayCursor = $state<string | undefined>(undefined);
+	let hasMore = $derived(!!todayCursor || !!yesterdayCursor);
 	let interval: ReturnType<typeof setInterval>;
+
+	function dates() {
+		const now = new Date();
+		return {
+			now,
+			today: now.toISOString().slice(0, 10),
+			yesterday: new Date(now.getTime() - 86_400_000).toISOString().slice(0, 10)
+		};
+	}
+
+	function mergeReports(existing: SmokingReportResponse[], incoming: SmokingReportResponse[], now: Date): SmokingReportResponse[] {
+		const seen = new Set(existing.map((r) => r.reportId));
+		const merged = [...existing, ...incoming.filter((r) => !seen.has(r.reportId))];
+		return merged
+			.filter((r) => new Date(r.expiresAt) > now)
+			.sort((a, b) => new Date(b.reportedAt).getTime() - new Date(a.reportedAt).getTime());
+	}
 
 	type GroupedReports = Map<Line, Map<string, SmokingReportResponse[]>>;
 
 	function groupReports(data: SmokingReportResponse[]): GroupedReports {
-		const sorted = [...data].sort(
-			(a, b) => new Date(b.reportedAt).getTime() - new Date(a.reportedAt).getTime()
-		);
-		const top25 = sorted.slice(0, 25);
 		const grouped: GroupedReports = new Map();
-		for (const report of top25) {
-			if (!grouped.has(report.line)) {
-				grouped.set(report.line, new Map());
-			}
+		for (const report of data) {
+			if (!grouped.has(report.line)) grouped.set(report.line, new Map());
 			const lineGroup = grouped.get(report.line)!;
-			if (!lineGroup.has(report.destinationId)) {
-				lineGroup.set(report.destinationId, []);
-			}
+			if (!lineGroup.has(report.destinationId)) lineGroup.set(report.destinationId, []);
 			lineGroup.get(report.destinationId)!.push(report);
 		}
 		return grouped;
 	}
 
 	function stationName(id: string): string {
-		return stationMap[id] ?? id;
+		return (stationMap[id] ?? id).replace(/\s*\(.*\)$/, '');
 	}
 
 	function timeAgo(iso: string): string {
@@ -57,8 +71,22 @@
 			error = null;
 		}
 		try {
-			reports = await fetchTop25Today();
-			lastUpdated = new Date();
+			const { now, today, yesterday } = dates();
+			const [todayResult, yesterdayResult] = await Promise.allSettled([
+				fetchReportsForDate(today),
+				now.getHours() < 12 ? fetchReportsForDate(yesterday) : Promise.resolve(null)
+			]);
+
+			const incoming = [
+				...(todayResult.status === 'fulfilled' ? todayResult.value.reports : []),
+				...(yesterdayResult.status === 'fulfilled' && yesterdayResult.value ? yesterdayResult.value.reports : [])
+			];
+
+			todayCursor = todayResult.status === 'fulfilled' ? todayResult.value.nextCursor : undefined;
+			yesterdayCursor = yesterdayResult.status === 'fulfilled' && yesterdayResult.value ? yesterdayResult.value.nextCursor : undefined;
+
+			reports = mergeReports([], incoming, now);
+			lastUpdated = now;
 			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load reports';
@@ -68,16 +96,55 @@
 		}
 	}
 
+	async function loadMore() {
+		loadingMore = true;
+		try {
+			const { now, today, yesterday } = dates();
+			const [todayResult, yesterdayResult] = await Promise.allSettled([
+				todayCursor ? fetchReportsForDate(today, todayCursor) : Promise.resolve(null),
+				yesterdayCursor ? fetchReportsForDate(yesterday, yesterdayCursor) : Promise.resolve(null)
+			]);
+
+			if (todayResult.status === 'fulfilled' && todayResult.value) {
+				todayCursor = todayResult.value.nextCursor;
+			}
+			if (yesterdayResult.status === 'fulfilled' && yesterdayResult.value) {
+				yesterdayCursor = yesterdayResult.value.nextCursor;
+			}
+
+			const incoming = [
+				...(todayResult.status === 'fulfilled' && todayResult.value ? todayResult.value.reports : []),
+				...(yesterdayResult.status === 'fulfilled' && yesterdayResult.value ? yesterdayResult.value.reports : [])
+			];
+
+			reports = mergeReports(reports, incoming, now);
+		} catch (e) {
+			error = e instanceof Error ? e.message : 'Failed to load more reports';
+		} finally {
+			loadingMore = false;
+		}
+	}
+
+	afterNavigate(() => load(true));
+
+	function onVisible() {
+		load(true);
+	}
+
 	onMount(async () => {
 		const [, stations] = await Promise.allSettled([load(), fetchStations()]);
 		if (stations.status === 'fulfilled') {
 			stationMap = Object.fromEntries(stations.value.map((s) => [s.id, s.name]));
 		}
 		interval = setInterval(() => load(true), 30_000);
+		document.addEventListener('visibilitychange', onVisible);
+		window.addEventListener('focus', onVisible);
 	});
 
 	onDestroy(() => {
 		clearInterval(interval);
+		document.removeEventListener('visibilitychange', onVisible);
+		window.removeEventListener('focus', onVisible);
 	});
 
 	let grouped = $derived(groupReports(reports));
@@ -117,10 +184,7 @@
 	<div class="bg-[#1a0808] border border-[#5a1010] text-[#f87171] rounded-xl p-4">
 		<p class="font-semibold">Error loading reports</p>
 		<p class="text-sm mt-1">{error}</p>
-		<button
-			onclick={() => load()}
-			class="mt-3 text-sm underline hover:no-underline"
-		>
+		<button onclick={() => load()} class="mt-3 text-sm underline hover:no-underline">
 			Try again
 		</button>
 	</div>
@@ -164,5 +228,15 @@
 				</div>
 			</div>
 		{/each}
+
+		{#if hasMore}
+			<button
+				onclick={loadMore}
+				disabled={loadingMore}
+				class="w-full py-3 rounded-xl border border-[#2a2a2a] text-sm text-[#888] hover:text-[#e5e5e5] hover:border-[#444] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+			>
+				{loadingMore ? 'Loading…' : 'Load more'}
+			</button>
+		{/if}
 	</div>
 {/if}
