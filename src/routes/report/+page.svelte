@@ -7,6 +7,10 @@
 
 	const lines = Object.values(Line);
 
+	function stationLabel(name: string): string {
+		return name.replace(/\s*\(.*\)$/, '');
+	}
+
 	const LINE_KEYWORDS: Record<Line, string> = {
 		[Line.RED]: 'red',
 		[Line.BLUE]: 'blue',
@@ -158,7 +162,7 @@
 			>
 				<option value="">{stations.length === 0 ? 'Loading stations…' : !line ? 'Select a line first…' : 'Select a destination…'}</option>
 				{#each filteredStations as station}
-					<option value={station.id}>{station.name}</option>
+					<option value={station.id}>{stationLabel(station.name)}</option>
 				{/each}
 			</select>
 		</div>
@@ -174,7 +178,7 @@
 			>
 				<option value="">{stations.length === 0 ? 'Loading stations…' : !line ? 'Select a line first…' : 'Select next station…'}</option>
 				{#each filteredStations as station}
-					<option value={station.id}>{station.name}</option>
+					<option value={station.id}>{stationLabel(station.name)}</option>
 				{/each}
 			</select>
 		</div>
