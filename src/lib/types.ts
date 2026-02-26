@@ -9,14 +9,21 @@ export enum Line {
 	YELLOW = 'YELLOW'
 }
 
+export interface Station {
+	id: string;
+	name: string;
+}
+
 export interface SmokingReportResponse {
+	date: string;
 	reportId: string;
+	reportedAt: string;
+	expiresAt: string;
 	line: Line;
-	destination: string;
-	nextStop: string;
+	destinationId: string;
+	nextStationId: string;
 	carNumber: string;
 	runNumber?: string;
-	reportedAt: string;
 }
 
 export interface SmokingReportsResponse {
@@ -26,18 +33,20 @@ export interface SmokingReportsResponse {
 
 export interface SubmitReportRequest {
 	line: Line;
-	destination: string;
-	nextStop: string;
+	destinationId: string;
+	nextStationId: string;
 	carNumber: string;
 	runNumber?: string;
 }
 
 export interface SubmitReportResponse {
+	date: string;
 	reportId: string;
+	reportedAt: string;
+	expiresAt: string;
 	line: Line;
-	destination: string;
-	nextStop: string;
+	destinationId: string;
+	nextStationId: string;
 	carNumber: string;
 	runNumber?: string;
-	reportedAt: string;
 }

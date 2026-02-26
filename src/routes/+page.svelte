@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { fetchTop25Today } from '$lib/api';
+	import { fetchTop25Today, fetchStations } from '$lib/api';
 	import type { SmokingReportResponse } from '$lib/types';
 	import { Line } from '$lib/types';
 	import { LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES } from '$lib/constants';
 
 	let reports: SmokingReportResponse[] = $state([]);
+	let stationMap = $state<Map<string, string>>(new Map());
 	let loading = $state(true);
 	let refreshing = $state(false);
 	let error: string | null = $state(null);
@@ -25,12 +26,16 @@
 				grouped.set(report.line, new Map());
 			}
 			const lineGroup = grouped.get(report.line)!;
-			if (!lineGroup.has(report.destination)) {
-				lineGroup.set(report.destination, []);
+			if (!lineGroup.has(report.destinationId)) {
+				lineGroup.set(report.destinationId, []);
 			}
-			lineGroup.get(report.destination)!.push(report);
+			lineGroup.get(report.destinationId)!.push(report);
 		}
 		return grouped;
+	}
+
+	function stationName(id: string): string {
+		return stationMap.get(id) ?? id;
 	}
 
 	function timeAgo(iso: string): string {
@@ -63,8 +68,11 @@
 		}
 	}
 
-	onMount(() => {
-		load();
+	onMount(async () => {
+		const [, stations] = await Promise.allSettled([load(), fetchStations()]);
+		if (stations.status === 'fulfilled') {
+			stationMap = new Map(stations.value.map((s) => [s.id, s.name]));
+		}
 		interval = setInterval(() => load(true), 30_000);
 	});
 
@@ -134,15 +142,15 @@
 					<span class="text-sm opacity-80">({total} report{total !== 1 ? 's' : ''})</span>
 				</div>
 				<div class="divide-y divide-gray-100">
-					{#each [...lineMap.entries()] as [destination, destReports]}
+					{#each [...lineMap.entries()] as [destinationId, destReports]}
 						<div class="px-4 py-3">
 							<h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
-								→ {destination}
+								→ {stationName(destinationId)}
 							</h3>
 							<div class="space-y-2">
 								{#each destReports as report}
 									<div class="flex flex-wrap gap-x-4 gap-y-1 items-center text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2">
-										<span><span class="font-medium">Stop:</span> {report.nextStop}</span>
+										<span><span class="font-medium">Next:</span> {stationName(report.nextStationId)}</span>
 										<span><span class="font-medium">Car:</span> {report.carNumber}</span>
 										{#if report.runNumber}
 											<span><span class="font-medium">Run:</span> {report.runNumber}</span>

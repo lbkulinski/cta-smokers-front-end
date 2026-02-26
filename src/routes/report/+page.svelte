@@ -1,14 +1,18 @@
 <script lang="ts">
-	import { submitReport } from '$lib/api';
+	import { onMount } from 'svelte';
+	import { submitReport, fetchStations } from '$lib/api';
 	import { Line } from '$lib/types';
-	import type { SubmitReportRequest } from '$lib/types';
+	import type { SubmitReportRequest, Station } from '$lib/types';
 	import { LINE_DISPLAY_NAMES } from '$lib/constants';
 
 	const lines = Object.values(Line);
 
+	let stations = $state<Station[]>([]);
+	let stationsError: string | null = $state(null);
+
 	let line = $state<Line | ''>('');
-	let destination = $state('');
-	let nextStop = $state('');
+	let destinationId = $state('');
+	let nextStationId = $state('');
 	let carNumber = $state('');
 	let runNumber = $state('');
 
@@ -17,20 +21,29 @@
 	let error: string | null = $state(null);
 	let validationError: string | null = $state(null);
 
+	onMount(async () => {
+		try {
+			const data = await fetchStations();
+			stations = data.slice().sort((a, b) => a.name.localeCompare(b.name));
+		} catch (e) {
+			stationsError = e instanceof Error ? e.message : 'Failed to load stations.';
+		}
+	});
+
 	function validate(): boolean {
 		if (!line) {
 			validationError = 'Please select a train line.';
 			return false;
 		}
-		if (!destination.trim()) {
+		if (!destinationId) {
 			validationError = 'Destination is required.';
 			return false;
 		}
-		if (!nextStop.trim()) {
-			validationError = 'Next stop is required.';
+		if (!nextStationId) {
+			validationError = 'Next station is required.';
 			return false;
 		}
-		if (!carNumber.trim()) {
+		if (!carNumber) {
 			validationError = 'Car number is required.';
 			return false;
 		}
@@ -48,18 +61,18 @@
 
 		const req: SubmitReportRequest = {
 			line: line as Line,
-			destination: destination.trim(),
-			nextStop: nextStop.trim(),
-			carNumber: carNumber.trim(),
-			...(runNumber.trim() ? { runNumber: runNumber.trim() } : {})
+			destinationId,
+			nextStationId,
+			carNumber,
+			...(runNumber ? { runNumber } : {})
 		};
 
 		try {
 			const res = await submitReport(req);
 			successId = res.reportId;
 			line = '';
-			destination = '';
-			nextStop = '';
+			destinationId = '';
+			nextStationId = '';
 			carNumber = '';
 			runNumber = '';
 		} catch (e_) {
@@ -97,6 +110,9 @@
 		{#if error}
 			<p class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
 		{/if}
+		{#if stationsError}
+			<p class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">Could not load station list: {stationsError}</p>
+		{/if}
 
 		<div>
 			<label for="line" class="block text-sm font-medium text-gray-700 mb-1">Train Line <span class="text-red-500">*</span></label>
@@ -114,34 +130,43 @@
 		</div>
 
 		<div>
-			<label for="destination" class="block text-sm font-medium text-gray-700 mb-1">Destination <span class="text-red-500">*</span></label>
-			<input
-				id="destination"
-				type="text"
-				bind:value={destination}
-				placeholder="e.g. O'Hare"
+			<label for="destinationId" class="block text-sm font-medium text-gray-700 mb-1">Destination <span class="text-red-500">*</span></label>
+			<select
+				id="destinationId"
+				bind:value={destinationId}
 				required
-				class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
-			/>
+				disabled={stations.length === 0}
+				class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+			>
+				<option value="">{stations.length === 0 ? 'Loading stations…' : 'Select a destination…'}</option>
+				{#each stations as station}
+					<option value={station.id}>{station.name}</option>
+				{/each}
+			</select>
 		</div>
 
 		<div>
-			<label for="nextStop" class="block text-sm font-medium text-gray-700 mb-1">Next Stop <span class="text-red-500">*</span></label>
-			<input
-				id="nextStop"
-				type="text"
-				bind:value={nextStop}
-				placeholder="e.g. Jackson"
+			<label for="nextStationId" class="block text-sm font-medium text-gray-700 mb-1">Next Station <span class="text-red-500">*</span></label>
+			<select
+				id="nextStationId"
+				bind:value={nextStationId}
 				required
-				class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
-			/>
+				disabled={stations.length === 0}
+				class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+			>
+				<option value="">{stations.length === 0 ? 'Loading stations…' : 'Select next station…'}</option>
+				{#each stations as station}
+					<option value={station.id}>{station.name}</option>
+				{/each}
+			</select>
 		</div>
 
 		<div>
 			<label for="carNumber" class="block text-sm font-medium text-gray-700 mb-1">Car Number <span class="text-red-500">*</span></label>
 			<input
 				id="carNumber"
-				type="text"
+				type="number"
+				min="0"
 				bind:value={carNumber}
 				placeholder="e.g. 5432"
 				required
@@ -153,7 +178,8 @@
 			<label for="runNumber" class="block text-sm font-medium text-gray-700 mb-1">Run Number <span class="text-gray-400 font-normal">(optional)</span></label>
 			<input
 				id="runNumber"
-				type="text"
+				type="number"
+				min="0"
 				bind:value={runNumber}
 				placeholder="e.g. 101"
 				class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
