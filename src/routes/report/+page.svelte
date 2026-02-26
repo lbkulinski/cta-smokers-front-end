@@ -97,7 +97,11 @@
 			carNumber = '';
 			runNumber = '';
 		} catch (e_) {
-			error = e_ instanceof Error ? e_.message : 'Failed to submit report.';
+			if (e_ instanceof TypeError && e_.message === 'Failed to fetch') {
+				error = 'Too many requests. Please wait 10 seconds before submitting again.';
+			} else {
+				error = e_ instanceof Error ? e_.message : 'Failed to submit report.';
+			}
 		} finally {
 			submitting = false;
 		}
