@@ -63,28 +63,28 @@
 		return date.toLocaleTimeString('en-US', { hour12: false });
 	}
 
-	async function load(isRefresh = false) {
-		if (isRefresh) {
-			refreshing = true;
-		} else {
-			loading = true;
-			error = null;
-		}
+	async function fetchFirstPages() {
+		const { now, today, yesterday } = dates();
+		const needsYesterday = now.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() < 12 * 60 * 60 * 1000;
+		const [todayResult, yesterdayResult] = await Promise.allSettled([
+			fetchReportsForDate(today),
+			needsYesterday ? fetchReportsForDate(yesterday) : Promise.resolve(null)
+		]);
+		return { now, todayResult, yesterdayResult };
+	}
+
+	// Hard load: resets reports and cursors (used on navigation)
+	async function load() {
+		loading = true;
+		error = null;
 		try {
-			const { now, today, yesterday } = dates();
-			const [todayResult, yesterdayResult] = await Promise.allSettled([
-				fetchReportsForDate(today),
-				now.getHours() < 12 ? fetchReportsForDate(yesterday) : Promise.resolve(null)
-			]);
-
+			const { now, todayResult, yesterdayResult } = await fetchFirstPages();
+			todayCursor = todayResult.status === 'fulfilled' ? todayResult.value?.nextCursor : undefined;
+			yesterdayCursor = yesterdayResult.status === 'fulfilled' ? yesterdayResult.value?.nextCursor : undefined;
 			const incoming = [
-				...(todayResult.status === 'fulfilled' ? todayResult.value.reports : []),
-				...(yesterdayResult.status === 'fulfilled' && yesterdayResult.value ? yesterdayResult.value.reports : [])
+				...(todayResult.status === 'fulfilled' ? todayResult.value?.reports ?? [] : []),
+				...(yesterdayResult.status === 'fulfilled' ? yesterdayResult.value?.reports ?? [] : [])
 			];
-
-			todayCursor = todayResult.status === 'fulfilled' ? todayResult.value.nextCursor : undefined;
-			yesterdayCursor = yesterdayResult.status === 'fulfilled' && yesterdayResult.value ? yesterdayResult.value.nextCursor : undefined;
-
 			reports = mergeReports([], incoming, now);
 			lastUpdated = now;
 			error = null;
@@ -92,6 +92,21 @@
 			error = e instanceof Error ? e.message : 'Failed to load reports';
 		} finally {
 			loading = false;
+		}
+	}
+
+	// Soft refresh: merges new page-1 data without resetting cursors (used by interval/visibility)
+	async function refresh() {
+		refreshing = true;
+		try {
+			const { now, todayResult, yesterdayResult } = await fetchFirstPages();
+			const incoming = [
+				...(todayResult.status === 'fulfilled' ? todayResult.value?.reports ?? [] : []),
+				...(yesterdayResult.status === 'fulfilled' ? yesterdayResult.value?.reports ?? [] : [])
+			];
+			reports = mergeReports(reports, incoming, now);
+			lastUpdated = now;
+		} finally {
 			refreshing = false;
 		}
 	}
@@ -125,24 +140,27 @@
 		}
 	}
 
-	afterNavigate(() => load(true));
+	afterNavigate(() => load());
 
+	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 	function onVisible() {
-		load(true);
+		if (debounceTimer) return;
+		debounceTimer = setTimeout(() => { debounceTimer = null; }, 2000);
+		refresh();
 	}
 
-	onMount(async () => {
-		const [, stations] = await Promise.allSettled([load(), fetchStations()]);
-		if (stations.status === 'fulfilled') {
-			stationMap = Object.fromEntries(stations.value.map((s) => [s.id, s.name]));
-		}
-		interval = setInterval(() => load(true), 30_000);
+	onMount(() => {
+		fetchStations()
+			.then((s) => { stationMap = Object.fromEntries(s.map((s) => [s.id, s.name])); })
+			.catch(() => {});
+		interval = setInterval(() => refresh(), 30_000);
 		document.addEventListener('visibilitychange', onVisible);
 		window.addEventListener('focus', onVisible);
 	});
 
 	onDestroy(() => {
 		clearInterval(interval);
+		if (debounceTimer) clearTimeout(debounceTimer);
 		document.removeEventListener('visibilitychange', onVisible);
 		window.removeEventListener('focus', onVisible);
 	});
@@ -184,9 +202,7 @@
 	<div class="bg-[#1a0808] border border-[#5a1010] text-[#f87171] rounded-xl p-4">
 		<p class="font-semibold">Error loading reports</p>
 		<p class="text-sm mt-1">{error}</p>
-		<button onclick={() => load()} class="mt-3 text-sm underline hover:no-underline">
-			Try again
-		</button>
+		<button onclick={() => load()} class="mt-3 text-sm underline hover:no-underline">Try again</button>
 	</div>
 {:else if reports.length === 0}
 	<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-8 text-center text-[#666]">

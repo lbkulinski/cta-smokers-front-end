@@ -28,7 +28,7 @@ export interface SmokingReportResponse {
 
 export interface SmokingReportsResponse {
 	reports: SmokingReportResponse[];
-	nextCursor?: string;
+	nextCursor: string | null;
 }
 
 export interface SubmitReportRequest {

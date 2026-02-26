@@ -11,6 +11,8 @@
 			<div class="flex gap-6 text-sm font-medium text-[#aaaaaa]">
 				<a href="/" class="hover:text-white transition-colors">Home</a>
 				<a href="/report" class="hover:text-white transition-colors">Report a Smoker</a>
+				<a href="mailto:admin@ctasmokers.com" class="hover:text-white transition-colors">Contact</a>
+				<a href="https://buymeacoffee.com/cta4j" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Buy Me a Coffee</a>
 			</div>
 		</div>
 	</nav>
