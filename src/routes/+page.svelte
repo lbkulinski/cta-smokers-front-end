@@ -65,7 +65,7 @@
 
 	async function fetchFirstPages() {
 		const { now, today, yesterday } = dates();
-		const needsYesterday = now.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() < 12 * 60 * 60 * 1000;
+		const needsYesterday = now.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() < 60 * 60 * 1000;
 		const [todayResult, yesterdayResult] = await Promise.allSettled([
 			fetchReportsForDate(today),
 			needsYesterday ? fetchReportsForDate(yesterday) : Promise.resolve(null)
