@@ -39,6 +39,10 @@ const LINE_TERMINALS: Record<Line, string[]> = {
 	[Line.YELLOW]: ['40140', '40900']          // Dempster-Skokie, Howard
 };
 
+// Lines that also serve the Loop as a destination
+const LOOP_LINES = new Set([Line.BROWN, Line.ORANGE, Line.PINK, Line.PURPLE]);
+const LOOP_STATION: Station = { id: '0', name: 'Loop' };
+
 function dedupeByMapId(filteredStops: StopData[]): Station[] {
 	const seen = new Set<string>();
 	const result: Station[] = [];
@@ -54,7 +58,12 @@ function dedupeByMapId(filteredStops: StopData[]): Station[] {
 export function getDestinations(line: Line): Station[] {
 	const isOnLine = LINE_FLAG[line];
 	const terminals = LINE_TERMINALS[line];
-	return dedupeByMapId(stops.filter((s) => isOnLine(s) && terminals.includes(s.map_id)));
+	const result = dedupeByMapId(stops.filter((s) => isOnLine(s) && terminals.includes(s.map_id)));
+	if (LOOP_LINES.has(line)) {
+		result.push(LOOP_STATION);
+		result.sort((a, b) => a.name.localeCompare(b.name));
+	}
+	return result;
 }
 
 export function getStations(line: Line): Station[] {
@@ -65,5 +74,6 @@ export function getStations(line: Line): Station[] {
 const stationNameMap = new Map<string, string>(stops.map((s) => [s.map_id, s.station_name]));
 
 export function getStationName(mapId: string): string {
+	if (mapId === '0') return 'Loop';
 	return stationNameMap.get(mapId) ?? mapId;
 }
