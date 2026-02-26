@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
-	import { fetchReportsForDate, fetchStations } from '$lib/api';
+	import { fetchReportsForDate } from '$lib/api';
 	import type { SmokingReportResponse } from '$lib/types';
 	import { Line } from '$lib/types';
 	import { LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES } from '$lib/constants';
+	import { getStationName } from '$lib/stations';
 
 	let reports: SmokingReportResponse[] = $state([]);
-	let stationMap = $state<Record<string, string>>({});
 	let loading = $state(true);
 	let refreshing = $state(false);
 	let loadingMore = $state(false);
@@ -46,10 +46,6 @@
 			lineGroup.get(report.destinationId)!.push(report);
 		}
 		return grouped;
-	}
-
-	function stationName(id: string): string {
-		return (stationMap[id] ?? id).replace(/\s*\(.*\)$/, '');
 	}
 
 	function timeAgo(iso: string): string {
@@ -150,9 +146,6 @@
 	}
 
 	onMount(() => {
-		fetchStations()
-			.then((s) => { stationMap = Object.fromEntries(s.map((s) => [s.id, s.name])); })
-			.catch(() => {});
 		interval = setInterval(() => refresh(), 30_000);
 		document.addEventListener('visibilitychange', onVisible);
 		window.addEventListener('focus', onVisible);
@@ -225,12 +218,12 @@
 					{#each [...lineMap.entries()] as [destinationId, destReports]}
 						<div class="px-4 py-3">
 							<h3 class="text-sm font-semibold text-[#888] uppercase tracking-wide mb-2">
-								→ {stationName(destinationId)}
+								→ {getStationName(destinationId)}
 							</h3>
 							<div class="space-y-2">
 								{#each destReports as report}
 									<div class="flex flex-wrap gap-x-4 gap-y-1 items-center text-sm text-[#ccc] bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2">
-										<span><span class="font-medium text-[#e5e5e5]">Next:</span> {stationName(report.nextStationId)}</span>
+										<span><span class="font-medium text-[#e5e5e5]">Next:</span> {getStationName(report.nextStationId)}</span>
 										<span><span class="font-medium text-[#e5e5e5]">Car:</span> {report.carNumber}</span>
 										{#if report.runNumber}
 											<span><span class="font-medium text-[#e5e5e5]">Run:</span> {report.runNumber}</span>

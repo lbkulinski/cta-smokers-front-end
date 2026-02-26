@@ -1,7 +1,6 @@
-import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest, SubmitReportResponse, Station } from './types';
+import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest, SubmitReportResponse } from './types';
 
 const SMOKERS_BASE_URL = import.meta.env.VITE_SMOKERS_API_BASE_URL ?? 'https://api.ctasmokers.com';
-const CTA4J_BASE_URL = import.meta.env.VITE_CTA4J_API_BASE_URL ?? 'https://api.cta4j.app';
 
 function checkResponse(res: Response, context: string): void {
 	if (res.status === 429) {
@@ -10,14 +9,6 @@ function checkResponse(res: Response, context: string): void {
 	if (!res.ok) {
 		throw new Error(`${context}: ${res.status} ${res.statusText}`);
 	}
-}
-
-export async function fetchStations(): Promise<Station[]> {
-	const res = await fetch(`${CTA4J_BASE_URL}/api/stations`);
-	if (!res.ok) {
-		throw new Error(`Failed to fetch stations: ${res.status} ${res.statusText}`);
-	}
-	return res.json();
 }
 
 export async function fetchReportsForDate(

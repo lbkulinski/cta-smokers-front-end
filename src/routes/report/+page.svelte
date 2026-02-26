@@ -1,36 +1,15 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { submitReport, fetchStations } from '$lib/api';
+	import { submitReport } from '$lib/api';
 	import { Line } from '$lib/types';
-	import type { SubmitReportRequest, Station } from '$lib/types';
+	import type { SubmitReportRequest } from '$lib/types';
 	import { LINE_DISPLAY_NAMES } from '$lib/constants';
+	import { getDestinations, getStations } from '$lib/stations';
 
 	const lines = Object.values(Line);
 
-	function stationLabel(name: string): string {
-		return name.replace(/\s*\(.*\)$/, '');
-	}
-
-	const LINE_KEYWORDS: Record<Line, string> = {
-		[Line.RED]: 'red',
-		[Line.BLUE]: 'blue',
-		[Line.BROWN]: 'brown',
-		[Line.GREEN]: 'green',
-		[Line.ORANGE]: 'orange',
-		[Line.PURPLE]: 'purple',
-		[Line.PINK]: 'pink',
-		[Line.YELLOW]: 'yellow'
-	};
-
-	let stations = $state<Station[]>([]);
-	let stationsError: string | null = $state(null);
-
 	let line = $state<Line | ''>('');
-	let filteredStations = $derived(
-		line
-			? stations.filter((s) => s.name.toLowerCase().includes(LINE_KEYWORDS[line as Line]))
-			: stations
-	);
+	let destinations = $derived(line ? getDestinations(line as Line) : []);
+	let allStations = $derived(line ? getStations(line as Line) : []);
 
 	let destinationId = $state('');
 	let nextStationId = $state('');
@@ -41,15 +20,6 @@
 	let successId: string | null = $state(null);
 	let error: string | null = $state(null);
 	let validationError: string | null = $state(null);
-
-	onMount(async () => {
-		try {
-			const data = await fetchStations();
-			stations = data.slice().sort((a, b) => a.name.localeCompare(b.name));
-		} catch (e) {
-			stationsError = e instanceof Error ? e.message : 'Failed to load stations.';
-		}
-	});
 
 	function validate(): boolean {
 		if (!line) {
@@ -135,9 +105,6 @@
 		{#if error}
 			<p class="text-sm text-[#f87171] bg-[#1a0808] border border-[#5a1010] rounded-lg px-3 py-2">{error}</p>
 		{/if}
-		{#if stationsError}
-			<p class="text-sm text-[#f87171] bg-[#1a0808] border border-[#5a1010] rounded-lg px-3 py-2">Could not load station list: {stationsError}</p>
-		{/if}
 
 		<div>
 			<label for="line" class="block text-sm font-medium text-[#aaa] mb-1">Train Line <span class="text-[#c60c30]">*</span></label>
@@ -161,12 +128,12 @@
 				id="destinationId"
 				bind:value={destinationId}
 				required
-				disabled={stations.length === 0 || !line}
+				disabled={!line}
 				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:opacity-40"
 			>
-				<option value="">{stations.length === 0 ? 'Loading stations…' : !line ? 'Select a line first…' : 'Select a destination…'}</option>
-				{#each filteredStations as station}
-					<option value={station.id}>{stationLabel(station.name)}</option>
+				<option value="">{!line ? 'Select a line first…' : 'Select a destination…'}</option>
+				{#each destinations as station}
+					<option value={station.id}>{station.name}</option>
 				{/each}
 			</select>
 		</div>
@@ -177,12 +144,12 @@
 				id="nextStationId"
 				bind:value={nextStationId}
 				required
-				disabled={stations.length === 0 || !line}
+				disabled={!line}
 				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:opacity-40"
 			>
-				<option value="">{stations.length === 0 ? 'Loading stations…' : !line ? 'Select a line first…' : 'Select next station…'}</option>
-				{#each filteredStations as station}
-					<option value={station.id}>{stationLabel(station.name)}</option>
+				<option value="">{!line ? 'Select a line first…' : 'Select next station…'}</option>
+				{#each allStations as station}
+					<option value={station.id}>{station.name}</option>
 				{/each}
 			</select>
 		</div>
