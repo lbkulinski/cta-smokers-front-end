@@ -1,4 +1,6 @@
 name = "cta-smokers-front-end"
 compatibility_date = "2025-01-01"
 
-assets = { directory = "./build", html_handling = "single-page-application" }
+[assets]
+directory = "./build"
+not_found_handling = "single-page-application"
