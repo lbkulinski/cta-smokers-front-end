@@ -1,4 +1,4 @@
-import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest, SubmitReportResponse } from './types';
+import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest } from './types';
 
 const SMOKERS_BASE_URL = import.meta.env.VITE_SMOKERS_API_BASE_URL ?? 'https://api.ctasmokers.com';
 
@@ -30,7 +30,7 @@ export async function fetchReportById(date: string, reportId: string): Promise<S
 	return res.json();
 }
 
-export async function submitReport(req: SubmitReportRequest): Promise<SubmitReportResponse> {
+export async function submitReport(req: SubmitReportRequest): Promise<SmokingReportResponse> {
 	const res = await fetch(`${SMOKERS_BASE_URL}/api/cta/reports/smoking`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },

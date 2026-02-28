@@ -91,7 +91,7 @@
 
 	async function fetchFirstPages() {
 		const { now, today, yesterday } = dates();
-		const needsYesterday = now.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() < 60 * 60 * 1000;
+		const needsYesterday = now.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() < 30 * 60 * 1000;
 		const [todayResult, yesterdayResult] = await Promise.allSettled([
 			fetchReportsForDate(today),
 			needsYesterday ? fetchReportsForDate(yesterday) : Promise.resolve(null)
@@ -207,11 +207,11 @@
 </script>
 
 <svelte:head>
-	<title>CTA Smokers — Today's Reports</title>
+	<title>CTA Smokers — Active Reports</title>
 </svelte:head>
 
 <div class="flex items-center justify-between mb-4">
-	<h1 class="text-2xl font-bold text-[#e5e5e5]">Today's Reports</h1>
+	<h1 class="text-2xl font-bold text-[#e5e5e5]">Active Reports</h1>
 	<div class="flex items-center gap-2 text-sm text-[#666]">
 		{#if refreshing}
 			<svg class="animate-spin h-4 w-4 text-[#555]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -243,8 +243,8 @@
 	</div>
 {:else if reports.length === 0}
 	<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-8 text-center text-[#666]">
-		<p class="text-lg">No reports yet today.</p>
-		<p class="text-sm mt-1">Be the first to <a href="/report" class="text-[#c60c30] underline">report a smoker</a>.</p>
+		<p class="text-lg">No active reports right now.</p>
+		<p class="text-sm mt-1"><a href="/report" class="text-[#c60c30] underline">Report a smoker</a> if you see one.</p>
 	</div>
 {:else}
 	{#if availableLines.length > 1}

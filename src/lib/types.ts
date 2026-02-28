@@ -39,14 +39,3 @@ export interface SubmitReportRequest {
 	runNumber?: string;
 }
 
-export interface SubmitReportResponse {
-	date: string;
-	reportId: string;
-	reportedAt: string;
-	expiresAt: string;
-	line: Line;
-	destinationId: string;
-	nextStationId: string;
-	carNumber: string;
-	runNumber?: string;
-}
