@@ -218,10 +218,10 @@
 </script>
 
 <svelte:head>
-	<title>CTA Smokers — Active Reports</title>
+	<title>CTA Smokers</title>
 	<meta name="description" content="See active smoking reports on CTA trains in real time. Help keep Chicago Transit Authority rail lines smoke-free." />
 	<link rel="canonical" href="https://ctasmokers.com/" />
-	<meta property="og:title" content="CTA Smokers — Active Reports" />
+	<meta property="og:title" content="CTA Smokers" />
 	<meta property="og:description" content="See active smoking reports on CTA trains in real time. Help keep Chicago Transit Authority rail lines smoke-free." />
 	<meta property="og:url" content="https://ctasmokers.com/" />
 	<meta property="og:type" content="website" />
