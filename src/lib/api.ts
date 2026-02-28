@@ -4,7 +4,7 @@ const SMOKERS_BASE_URL = import.meta.env.VITE_SMOKERS_API_BASE_URL ?? 'https://a
 
 function checkResponse(res: Response, context: string): void {
 	if (res.status === 429) {
-		throw new Error('Rate limit exceeded. Please wait 10 seconds before trying again.');
+		throw new Error('Too many requests. Please wait before submitting again.');
 	}
 	if (!res.ok) {
 		throw new Error(`${context}: ${res.status} ${res.statusText}`);
