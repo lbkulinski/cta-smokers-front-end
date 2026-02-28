@@ -219,6 +219,13 @@
 
 <svelte:head>
 	<title>CTA Smokers — Active Reports</title>
+	<meta name="description" content="See active smoking reports on CTA trains in real time. Help keep Chicago Transit Authority rail lines smoke-free." />
+	<link rel="canonical" href="https://ctasmokers.com/" />
+	<meta property="og:title" content="CTA Smokers — Active Reports" />
+	<meta property="og:description" content="See active smoking reports on CTA trains in real time. Help keep Chicago Transit Authority rail lines smoke-free." />
+	<meta property="og:url" content="https://ctasmokers.com/" />
+	<meta property="og:type" content="website" />
+	<meta property="og:image" content="https://ctasmokers.com/og-image.png" />
 </svelte:head>
 
 <div class="flex items-center justify-between mb-4">

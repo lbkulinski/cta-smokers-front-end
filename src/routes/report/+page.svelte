@@ -80,6 +80,13 @@
 
 <svelte:head>
 	<title>CTA Smokers — Report a Smoker</title>
+	<meta name="description" content="Report a smoker on a CTA train. Submit a smoking report for any Chicago Transit Authority rail line." />
+	<link rel="canonical" href="https://ctasmokers.com/report" />
+	<meta property="og:title" content="CTA Smokers — Report a Smoker" />
+	<meta property="og:description" content="Report a smoker on a CTA train. Submit a smoking report for any Chicago Transit Authority rail line." />
+	<meta property="og:url" content="https://ctasmokers.com/report" />
+	<meta property="og:type" content="website" />
+	<meta property="og:image" content="https://ctasmokers.com/og-image.png" />
 </svelte:head>
 
 <div class="max-w-lg mx-auto">
