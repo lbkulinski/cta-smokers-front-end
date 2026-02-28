@@ -33,13 +33,16 @@
 		selectedLine = selectedLine === line ? null : line;
 	}
 
+	function chicagoDateString(d: Date): string {
+		return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(d);
+	}
+
 	function dates() {
 		const now = new Date();
-		return {
-			now,
-			today: now.toISOString().slice(0, 10),
-			yesterday: new Date(now.getTime() - 86_400_000).toISOString().slice(0, 10)
-		};
+		const today = chicagoDateString(now);
+		const yesterdayDate = new Date(now.getTime() - 86_400_000);
+		const yesterday = chicagoDateString(yesterdayDate);
+		return { now, today, yesterday };
 	}
 
 	function mergeReports(existing: SmokingReportResponse[], incoming: SmokingReportResponse[], now: Date): SmokingReportResponse[] {
@@ -91,7 +94,15 @@
 
 	async function fetchFirstPages() {
 		const { now, today, yesterday } = dates();
-		const needsYesterday = now.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() < 30 * 60 * 1000;
+		const chicagoParts = new Intl.DateTimeFormat('en-US', {
+			timeZone: 'America/Chicago',
+			hour: 'numeric',
+			minute: 'numeric',
+			hour12: false
+		}).formatToParts(now);
+		const chicagoHour = parseInt(chicagoParts.find((p) => p.type === 'hour')?.value ?? '0');
+		const chicagoMinute = parseInt(chicagoParts.find((p) => p.type === 'minute')?.value ?? '0');
+		const needsYesterday = chicagoHour === 0 && chicagoMinute < 30;
 		const [todayResult, yesterdayResult] = await Promise.allSettled([
 			fetchReportsForDate(today),
 			needsYesterday ? fetchReportsForDate(yesterday) : Promise.resolve(null)
