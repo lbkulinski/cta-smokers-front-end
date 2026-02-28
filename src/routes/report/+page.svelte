@@ -68,7 +68,7 @@
 			runNumber = '';
 		} catch (e_) {
 			if (e_ instanceof TypeError && e_.message === 'Failed to fetch') {
-				error = 'Too many requests. Please wait 10 seconds before submitting again.';
+				error = 'Too many requests. Please wait before submitting again.';
 			} else {
 				error = e_ instanceof Error ? e_.message : 'Failed to submit report.';
 			}
@@ -96,12 +96,12 @@
 		<div class="bg-[#0a1a0a] border border-[#1a4a1a] text-[#6ee77a] rounded-xl p-5 mb-6">
 			<p class="font-semibold text-lg">Report submitted!</p>
 			<p class="text-sm mt-1 text-[#5acc66]">Report ID: <code class="font-mono bg-[#0d220d] px-1 rounded">{successId}</code></p>
-			<button
-				onclick={() => { successId = null; }}
-				class="mt-3 text-sm text-[#5acc66] underline hover:no-underline"
+			<a
+				href="/"
+				class="mt-3 inline-block text-sm text-[#5acc66] underline hover:no-underline"
 			>
-				Submit another report
-			</button>
+				View today's reports
+			</a>
 		</div>
 	{/if}
 
