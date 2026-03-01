@@ -26,30 +26,30 @@
 	let errorEl: HTMLElement | null = $state(null);
 	let successEl: HTMLElement | null = $state(null);
 
-	async function focusAfterUpdate(el: HTMLElement | null) {
+	async function focusAfterUpdate(getEl: () => HTMLElement | null) {
 		await tick();
-		el?.focus();
+		getEl()?.focus();
 	}
 
 	function validate(): boolean {
 		if (!line) {
 			validationError = 'Please select a train line.';
-			focusAfterUpdate(validationErrorEl);
+			focusAfterUpdate(() => validationErrorEl);
 			return false;
 		}
 		if (!destinationId) {
 			validationError = 'Destination is required.';
-			focusAfterUpdate(validationErrorEl);
+			focusAfterUpdate(() => validationErrorEl);
 			return false;
 		}
 		if (!nextStationId) {
 			validationError = 'Next station is required.';
-			focusAfterUpdate(validationErrorEl);
+			focusAfterUpdate(() => validationErrorEl);
 			return false;
 		}
 		if (!carNumber) {
 			validationError = 'Car number is required.';
-			focusAfterUpdate(validationErrorEl);
+			focusAfterUpdate(() => validationErrorEl);
 			return false;
 		}
 		validationError = null;
@@ -80,14 +80,14 @@
 			nextStationId = '';
 			carNumber = '';
 			runNumber = '';
-			focusAfterUpdate(successEl);
+			focusAfterUpdate(() => successEl);
 		} catch (e_) {
 			if (e_ instanceof TypeError && e_.message === 'Failed to fetch') {
 				error = 'Too many requests. Please wait before submitting again.';
 			} else {
 				error = e_ instanceof Error ? e_.message : 'Failed to submit report.';
 			}
-			focusAfterUpdate(errorEl);
+			focusAfterUpdate(() => errorEl);
 		} finally {
 			submitting = false;
 		}
@@ -170,7 +170,7 @@
 				required
 				aria-required="true"
 				disabled={!line}
-				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:opacity-40"
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:opacity-40"
 			>
 				<option value="">{!line ? 'Select a line first…' : 'Select a destination…'}</option>
 				{#each destinations as station}
@@ -187,7 +187,7 @@
 				required
 				aria-required="true"
 				disabled={!line}
-				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:opacity-40"
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:opacity-40"
 			>
 				<option value="">{!line ? 'Select a line first…' : 'Select next station…'}</option>
 				{#each allStations as station}
@@ -213,7 +213,7 @@
 		</div>
 
 		<div>
-			<label for="runNumber" class="block text-sm font-medium text-[#aaa] mb-1">Run Number <span class="text-[#555] font-normal">(optional)</span></label>
+			<label for="runNumber" class="block text-sm font-medium text-[#aaa] mb-1">Run Number <span class="text-[#888] font-normal">(optional)</span></label>
 			<input
 				id="runNumber"
 				type="text"
