@@ -5,6 +5,7 @@ import rawStops from './cta-stops.json';
 interface StopData {
 	map_id: string;
 	station_name: string;
+	station_descriptive_name: string;
 	red: boolean;
 	blue: boolean;
 	g: boolean;
@@ -49,7 +50,7 @@ const LINE_STOP_ORDER: Record<Line, string[]> = {
 	// Howard → 95th/Dan Ryan (north → south)
 	[Line.RED]: ['40900','41190','40100','41300','40760','40880','41380','40340','41200','40770','40540','40080','41420','41320','41220','40650','40630','41450','40330','41660','41090','40560','41490','41400','41000','40190','41230','41170','40910','40990','40240','41430','40450'],
 	// O'Hare → Forest Park (west → east)
-	[Line.BLUE]: ['40890','40820','40230','40750','41280','41330','40550','41240','40060','41020','40570','40220','40590','40320','41410','40490','40380','40370','40790','40070','41340','40430','40350','40470','40810','40670','40250','40920','40970','40010','40180','40980','40390'],
+	[Line.BLUE]: ['40890','40820','40230','40750','41280','41330','40550','41240','40060','41020','40570','40670','40590','40320','41410','40490','40380','40370','40790','40070','41340','40430','40350','40470','40810','40220','40250','40920','40970','40010','40180','40980','40390'],
 	// Harlem/Lake → Cottage Grove / Ashland/63rd (west → east → south)
 	[Line.GREEN]: ['40020','41350','40610','41260','40280','40700','40480','40030','41670','41070','41360','41710','40170','41510','41160','40380','40260','41700','40680','41400','41690','41120','40300','41270','41080','40130','40510','41140','40720','40940','40290'],
 	// Kimball → Loop counterclockwise (northwest → downtown)
@@ -99,6 +100,21 @@ export function getStations(line: Line): Station[] {
 			result.push({ id: stop.map_id, name: stop.station_name });
 		}
 	}
+	// Disambiguate stations that share a name on this line (e.g. two "Western" stops on Blue)
+	const nameCounts = new Map<string, number>();
+	for (const s of result) nameCounts.set(s.name, (nameCounts.get(s.name) ?? 0) + 1);
+	if ([...nameCounts.values()].some((c) => c > 1)) {
+		for (const station of result) {
+			if ((nameCounts.get(station.name) ?? 0) > 1) {
+				const stop = stops.find((s) => s.map_id === station.id);
+				if (stop) {
+					// "Western (Blue Line - O'Hare Branch)" → "Western (O'Hare Branch)"
+					station.name = stop.station_descriptive_name.replace(/\([^)]*Line\s*-\s*/g, '(');
+				}
+			}
+		}
+	}
+
 	result.sort((a, b) => {
 		const ai = indexMap.get(a.id) ?? Infinity;
 		const bi = indexMap.get(b.id) ?? Infinity;
@@ -107,7 +123,18 @@ export function getStations(line: Line): Station[] {
 	return result;
 }
 
-const stationNameMap = new Map<string, string>(stops.map((s) => [s.map_id, s.station_name]));
+// Build a name map that disambiguates stations sharing a name (e.g. two "Western" on Blue line)
+const _nameCountsGlobal = new Map<string, number>();
+for (const s of stops) _nameCountsGlobal.set(s.station_name, (_nameCountsGlobal.get(s.station_name) ?? 0) + 1);
+
+const stationNameMap = new Map<string, string>();
+for (const s of stops) {
+	if ((_nameCountsGlobal.get(s.station_name) ?? 0) > 1) {
+		stationNameMap.set(s.map_id, s.station_descriptive_name.replace(/\([^)]*Line\s*-\s*/g, '('));
+	} else {
+		stationNameMap.set(s.map_id, s.station_name);
+	}
+}
 
 export function getStationName(mapId: string): string {
 	if (mapId === '0') return 'Loop';
