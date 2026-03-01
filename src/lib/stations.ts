@@ -127,16 +127,31 @@ export function getStations(line: Line): Station[] {
 	return result;
 }
 
-// Build a name map that disambiguates stations sharing a name (e.g. two "Western" on Blue line)
-const _nameCountsGlobal = new Map<string, number>();
-for (const s of stops) _nameCountsGlobal.set(s.station_name, (_nameCountsGlobal.get(s.station_name) ?? 0) + 1);
+// Find map_ids whose station_name is shared with another map_id on the same line.
+// Only those need a branch qualifier (e.g. Western/Harlem on Blue).
+const _intraLineAmbiguous = new Set<string>();
+for (const [line, flag] of Object.entries(LINE_FLAG) as [Line, (s: StopData) => boolean][]) {
+	const seen = new Set<string>();
+	const unique: StopData[] = [];
+	for (const s of stops.filter(flag)) {
+		if (!seen.has(s.map_id)) { seen.add(s.map_id); unique.push(s); }
+	}
+	const counts = new Map<string, number>();
+	for (const s of unique) counts.set(s.station_name, (counts.get(s.station_name) ?? 0) + 1);
+	for (const s of unique) {
+		if ((counts.get(s.station_name) ?? 0) > 1) _intraLineAmbiguous.add(s.map_id);
+	}
+}
 
 const stationNameMap = new Map<string, string>();
 for (const s of stops) {
-	if ((_nameCountsGlobal.get(s.station_name) ?? 0) > 1) {
-		stationNameMap.set(s.map_id, s.station_descriptive_name.replace(/\([^)]*Line\s*-\s*/g, '('));
-	} else {
-		stationNameMap.set(s.map_id, s.station_name);
+	if (!stationNameMap.has(s.map_id)) {
+		stationNameMap.set(
+			s.map_id,
+			_intraLineAmbiguous.has(s.map_id)
+				? s.station_descriptive_name.replace(/\([^)]*Line\s*-\s*/g, '(')
+				: s.station_name
+		);
 	}
 }
 
