@@ -96,9 +96,10 @@
 		<div class="bg-[#0a1a0a] border border-[#1a4a1a] text-[#6ee77a] rounded-xl p-5 mb-6">
 			<p class="font-semibold text-lg">Report submitted!</p>
 			<p class="text-sm mt-1 text-[#5acc66]">Report ID: <code class="font-mono bg-[#0d220d] px-1 rounded">{successId}</code></p>
+			<p class="text-sm mt-3 text-[#5acc66]">Want to take it further? <a href="https://www.transitchicago.com/contact/" target="_blank" rel="noopener noreferrer" class="underline hover:no-underline">Report to CTA directly →</a></p>
 			<a
 				href="/"
-				class="mt-3 inline-block text-sm text-[#5acc66] underline hover:no-underline"
+				class="mt-2 inline-block text-sm text-[#5acc66] underline hover:no-underline"
 			>
 				View today's reports
 			</a>

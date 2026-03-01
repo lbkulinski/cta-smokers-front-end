@@ -5,6 +5,7 @@ import rawStops from './cta-stops.json';
 interface StopData {
 	map_id: string;
 	station_name: string;
+	station_descriptive_name: string;
 	red: boolean;
 	blue: boolean;
 	g: boolean;
@@ -43,6 +44,31 @@ const LINE_TERMINALS: Record<Line, string[]> = {
 const LOOP_LINES = new Set([Line.BROWN, Line.ORANGE, Line.PINK, Line.PURPLE]);
 const LOOP_STATION: Station = { id: '0', name: 'Loop' };
 
+// Stations temporarily closed and excluded from dropdowns
+// State/Lake (40260): under construction until 2029
+const CLOSED_STATIONS = new Set(['40260']);
+
+// Stations in actual route order (terminal-to-terminal) for each line.
+// Used to sort the "Next Station" dropdown by stop order instead of alphabetically.
+const LINE_STOP_ORDER: Record<Line, string[]> = {
+	// Howard → 95th/Dan Ryan (north → south)
+	[Line.RED]: ['40900','41190','40100','41300','40760','40880','41380','40340','41200','40770','40540','40080','41420','41320','41220','40650','40630','41450','40330','41660','41090','40560','41490','41400','41000','40190','41230','41170','40910','40990','40240','41430','40450'],
+	// O'Hare → Forest Park (west → east)
+	[Line.BLUE]: ['40890','40820','40230','40750','41280','41330','40550','41240','40060','41020','40570','40670','40590','40320','41410','40490','40380','40370','40790','40070','41340','40430','40350','40470','40810','40220','40250','40920','40970','40010','40180','40980','40390'],
+	// Harlem/Lake → Cottage Grove / Ashland/63rd (west → east → south)
+	[Line.GREEN]: ['40020','41350','40610','41260','40280','40700','40480','40030','41670','41070','41360','41710','40170','41510','41160','40380','40260','41700','40680','41400','41690','41120','40300','41270','41080','40130','40510','41140','40720','40940','40290'],
+	// Kimball → Loop counterclockwise (northwest → downtown)
+	[Line.BROWN]: ['41290','41180','40870','41010','41480','40090','41500','41460','41440','41310','40360','41320','41210','40530','41220','40660','40800','40710','40460','40730','40040','40160','40850','40680','41700','40260','40380'],
+	// Linden → Howard → Loop clockwise (north → downtown)
+	[Line.PURPLE]: ['41050','41250','40400','40520','40050','40690','40270','40840','40900','40540','41320','41210','40530','41220','40660','40800','40710','40460','40380','40260','41700','40680','40850','40160','40040','40730'],
+	// Midway → Loop (southwest → downtown)
+	[Line.ORANGE]: ['40930','40960','41150','40310','40120','41060','41130','41400','40850','40160','40040','40730','40380','40260','41700','40680'],
+	// 54th/Cermak → Loop (west → downtown)
+	[Line.PINK]: ['40580','40420','40600','40150','40780','41040','40440','40740','40210','40830','41030','40170','41510','41160','40380','40260','41700','40680','40850','40160','40040','40730'],
+	// Dempster-Skokie → Howard (north → south)
+	[Line.YELLOW]: ['40140','41680','40900'],
+};
+
 function dedupeByMapId(filteredStops: StopData[]): Station[] {
 	const seen = new Set<string>();
 	const result: Station[] = [];
@@ -59,19 +85,75 @@ export function getDestinations(line: Line): Station[] {
 	const isOnLine = LINE_FLAG[line];
 	const terminals = LINE_TERMINALS[line];
 	const result = dedupeByMapId(stops.filter((s) => isOnLine(s) && terminals.includes(s.map_id)));
+	result.sort((a, b) => terminals.indexOf(a.id) - terminals.indexOf(b.id));
 	if (LOOP_LINES.has(line)) {
 		result.push(LOOP_STATION);
-		result.sort((a, b) => a.name.localeCompare(b.name));
 	}
 	return result;
 }
 
 export function getStations(line: Line): Station[] {
 	const isOnLine = LINE_FLAG[line];
-	return dedupeByMapId(stops.filter((s) => isOnLine(s)));
+	const order = LINE_STOP_ORDER[line];
+	const indexMap = new Map(order.map((id, i) => [id, i]));
+	const seen = new Set<string>();
+	const result: Station[] = [];
+	for (const stop of stops.filter((s) => isOnLine(s) && !CLOSED_STATIONS.has(s.map_id))) {
+		if (!seen.has(stop.map_id)) {
+			seen.add(stop.map_id);
+			result.push({ id: stop.map_id, name: stop.station_name });
+		}
+	}
+	// Disambiguate stations that share a name on this line (e.g. two "Western" stops on Blue)
+	const nameCounts = new Map<string, number>();
+	for (const s of result) nameCounts.set(s.name, (nameCounts.get(s.name) ?? 0) + 1);
+	if ([...nameCounts.values()].some((c) => c > 1)) {
+		for (const station of result) {
+			if ((nameCounts.get(station.name) ?? 0) > 1) {
+				const stop = stops.find((s) => s.map_id === station.id);
+				if (stop) {
+					// "Western (Blue Line - O'Hare Branch)" → "Western (O'Hare Branch)"
+					station.name = stop.station_descriptive_name.replace(/\([^)]*Line\s*-\s*/g, '(');
+				}
+			}
+		}
+	}
+
+	result.sort((a, b) => {
+		const ai = indexMap.get(a.id) ?? Infinity;
+		const bi = indexMap.get(b.id) ?? Infinity;
+		return ai !== bi ? ai - bi : a.name.localeCompare(b.name);
+	});
+	return result;
 }
 
-const stationNameMap = new Map<string, string>(stops.map((s) => [s.map_id, s.station_name]));
+// Find map_ids whose station_name is shared with another map_id on the same line.
+// Only those need a branch qualifier (e.g. Western/Harlem on Blue).
+const _intraLineAmbiguous = new Set<string>();
+for (const [line, flag] of Object.entries(LINE_FLAG) as [Line, (s: StopData) => boolean][]) {
+	const seen = new Set<string>();
+	const unique: StopData[] = [];
+	for (const s of stops.filter(flag)) {
+		if (!seen.has(s.map_id)) { seen.add(s.map_id); unique.push(s); }
+	}
+	const counts = new Map<string, number>();
+	for (const s of unique) counts.set(s.station_name, (counts.get(s.station_name) ?? 0) + 1);
+	for (const s of unique) {
+		if ((counts.get(s.station_name) ?? 0) > 1) _intraLineAmbiguous.add(s.map_id);
+	}
+}
+
+const stationNameMap = new Map<string, string>();
+for (const s of stops) {
+	if (!stationNameMap.has(s.map_id)) {
+		stationNameMap.set(
+			s.map_id,
+			_intraLineAmbiguous.has(s.map_id)
+				? s.station_descriptive_name.replace(/\([^)]*Line\s*-\s*/g, '(')
+				: s.station_name
+		);
+	}
+}
 
 export function getStationName(mapId: string): string {
 	if (mapId === '0') return 'Loop';
