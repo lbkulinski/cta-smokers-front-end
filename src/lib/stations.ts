@@ -85,9 +85,9 @@ export function getDestinations(line: Line): Station[] {
 	const isOnLine = LINE_FLAG[line];
 	const terminals = LINE_TERMINALS[line];
 	const result = dedupeByMapId(stops.filter((s) => isOnLine(s) && terminals.includes(s.map_id)));
+	result.sort((a, b) => terminals.indexOf(a.id) - terminals.indexOf(b.id));
 	if (LOOP_LINES.has(line)) {
 		result.push(LOOP_STATION);
-		result.sort((a, b) => a.name.localeCompare(b.name));
 	}
 	return result;
 }
