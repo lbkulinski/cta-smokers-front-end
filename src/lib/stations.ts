@@ -44,6 +44,10 @@ const LINE_TERMINALS: Record<Line, string[]> = {
 const LOOP_LINES = new Set([Line.BROWN, Line.ORANGE, Line.PINK, Line.PURPLE]);
 const LOOP_STATION: Station = { id: '0', name: 'Loop' };
 
+// Stations temporarily closed and excluded from dropdowns
+// State/Lake (40260): under construction until 2029
+const CLOSED_STATIONS = new Set(['40260']);
+
 // Stations in actual route order (terminal-to-terminal) for each line.
 // Used to sort the "Next Station" dropdown by stop order instead of alphabetically.
 const LINE_STOP_ORDER: Record<Line, string[]> = {
@@ -94,7 +98,7 @@ export function getStations(line: Line): Station[] {
 	const indexMap = new Map(order.map((id, i) => [id, i]));
 	const seen = new Set<string>();
 	const result: Station[] = [];
-	for (const stop of stops.filter((s) => isOnLine(s))) {
+	for (const stop of stops.filter((s) => isOnLine(s) && !CLOSED_STATIONS.has(s.map_id))) {
 		if (!seen.has(stop.map_id)) {
 			seen.add(stop.map_id);
 			result.push({ id: stop.map_id, name: stop.station_name });
