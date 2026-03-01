@@ -29,7 +29,7 @@
 
 	<footer class="bg-[#111111] border-t border-[#222222] mt-auto">
 		<div class="max-w-4xl mx-auto px-4 py-3 flex gap-6 text-xs font-medium text-[#666666]">
-			<a href="https://cta4j.app" target="_blank" rel="noopener noreferrer" class="hover:text-[#aaaaaa] transition-colors">CTA Train & Bus Tracker</a>
+			<a href="https://cta4j.app" target="_blank" rel="noopener noreferrer" class="hover:text-[#aaaaaa] transition-colors">cta4j.app</a>
 			<a href="https://buymeacoffee.com/cta4j" target="_blank" rel="noopener noreferrer" class="hover:text-[#aaaaaa] transition-colors">Buy Me a Coffee</a>
 		</div>
 	</footer>
