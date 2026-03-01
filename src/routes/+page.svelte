@@ -230,21 +230,22 @@
 
 <div class="flex items-center justify-between mb-4">
 	<h1 class="text-2xl font-bold text-[#e5e5e5]">Active Reports</h1>
-	<div class="flex items-center gap-2 text-sm text-[#666]">
+	<div class="flex items-center gap-2 text-sm text-[#888]">
 		{#if refreshing}
-			<svg class="animate-spin h-4 w-4 text-[#555]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+			<svg role="img" aria-label="Refreshing" class="animate-spin h-4 w-4 text-[#888]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
 				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
 				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
 			</svg>
 		{/if}
 		{#if lastUpdated}
-			<span>Updated {formatTime(lastUpdated)}</span>
+			<span aria-live="polite" aria-atomic="true">Updated {formatTime(lastUpdated)}</span>
 		{/if}
 	</div>
 </div>
 
 {#if loading}
-	<div class="space-y-4">
+	<div role="status" class="sr-only">Loading reports…</div>
+	<div class="space-y-4" aria-hidden="true">
 		{#each [1, 2, 3] as _}
 			<div class="animate-pulse bg-[#171717] rounded-xl border border-[#2a2a2a] p-4">
 				<div class="h-6 bg-[#2a2a2a] rounded w-32 mb-3"></div>
@@ -254,23 +255,24 @@
 		{/each}
 	</div>
 {:else if error}
-	<div class="bg-[#1a0808] border border-[#5a1010] text-[#f87171] rounded-xl p-4">
+	<div role="alert" class="bg-[#1a0808] border border-[#5a1010] text-[#f87171] rounded-xl p-4">
 		<p class="font-semibold">Error loading reports</p>
 		<p class="text-sm mt-1">{error}</p>
-		<button onclick={() => load()} class="mt-3 text-sm underline hover:no-underline">Try again</button>
+		<button onclick={() => load()} class="mt-3 text-sm underline hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f87171] focus-visible:outline-offset-2 rounded">Try again</button>
 	</div>
 {:else if reports.length === 0}
-	<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-8 text-center text-[#666]">
+	<div role="status" class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-8 text-center text-[#888]">
 		<p class="text-lg">No active reports right now.</p>
-		<p class="text-sm mt-1"><a href="/report" class="text-[#c60c30] underline">Report a smoker</a> if you see one.</p>
+		<p class="text-sm mt-1"><a href="/report" class="text-[#c60c30] underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-2 rounded-sm">Report a smoker</a> if you see one.</p>
 	</div>
 {:else}
 	{#if availableLines.length > 1}
-		<div class="flex gap-2 overflow-x-auto pb-3 mb-4" style="scrollbar-width: none; -webkit-overflow-scrolling: touch;">
+		<div class="flex gap-2 overflow-x-auto pb-3 mb-4" style="scrollbar-width: none; -webkit-overflow-scrolling: touch;" role="group" aria-label="Filter by train line">
 			{#each availableLines as line}
 				<button
 					onclick={() => toggleLine(line)}
-					class="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-semibold transition-opacity"
+					aria-pressed={selectedLine === line}
+					class="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-semibold transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
 					style="background-color: {LINE_COLORS[line]}; color: {LINE_TEXT_COLORS[line]}; opacity: {selectedLine === null || selectedLine === line ? 1 : 0.35};"
 				>
 					{LINE_DISPLAY_NAMES[line]}
@@ -280,9 +282,9 @@
 	{/if}
 
 	{#if lineOrder.length === 0}
-		<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-8 text-center text-[#666]">
+		<div role="status" class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-8 text-center text-[#888]">
 			<p>No {LINE_DISPLAY_NAMES[selectedLine!]} reports right now.</p>
-			<button onclick={() => (selectedLine = null)} class="mt-2 text-sm text-[#c60c30] underline">Show all lines</button>
+			<button onclick={() => (selectedLine = null)} class="mt-2 text-sm text-[#c60c30] underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-2 rounded-sm">Show all lines</button>
 		</div>
 	{:else}
 		<div class="space-y-6">
@@ -299,30 +301,35 @@
 					<div class="divide-y divide-[#2a2a2a]">
 						{#each [...lineMap.entries()] as [destinationId, carGroups]}
 							<div class="px-4 py-3">
-								<h3 class="text-xs font-semibold text-[#666] uppercase tracking-wider mb-2.5">
-									→ {getStationName(destinationId)}
+								<h3 class="text-xs font-semibold text-[#888] uppercase tracking-wider mb-2.5">
+									<span aria-hidden="true">→</span>
+									<span class="sr-only">Toward</span>
+									{getStationName(destinationId)}
 								</h3>
 								<div class="space-y-2">
 									{#each carGroups as group}
-										<div class="flex items-center gap-3 text-sm bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2.5">
+										<article class="flex items-center gap-3 text-sm bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2.5">
 											<div class="flex-1 min-w-0">
 												<div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
 													<span class="font-semibold text-[#e5e5e5]">Car {group.carNumber}</span>
 													{#if group.runNumber}
-														<span class="text-[#666] text-xs">Run {group.runNumber}</span>
+														<span class="text-[#888] text-xs">Run {group.runNumber}</span>
 													{/if}
 												</div>
-												<div class="text-[#777] text-xs mt-0.5">Next: {getStationName(group.nextStationId)}</div>
+												<div class="text-[#888] text-xs mt-0.5">Next: {getStationName(group.nextStationId)}</div>
 											</div>
 											<div class="flex-shrink-0 flex flex-col items-end gap-1">
 												{#if group.count > 1}
-													<span class="bg-[#c60c30] text-white text-xs font-bold px-2 py-0.5 rounded-full leading-none">
+													<span
+														class="bg-[#c60c30] text-white text-xs font-bold px-2 py-0.5 rounded-full leading-none"
+														aria-label="{group.count} reports"
+													>
 														{group.count}×
 													</span>
 												{/if}
-												<span class="text-xs text-[#555]">{timeAgo(group.latestAt)}</span>
+												<time datetime={group.latestAt} class="text-xs text-[#888]">{timeAgo(group.latestAt)}</time>
 											</div>
-										</div>
+										</article>
 									{/each}
 								</div>
 							</div>
@@ -335,7 +342,7 @@
 				<button
 					onclick={loadMore}
 					disabled={loadingMore}
-					class="w-full py-3 rounded-xl border border-[#2a2a2a] text-sm text-[#888] hover:text-[#e5e5e5] hover:border-[#444] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+					class="w-full py-3 rounded-xl border border-[#2a2a2a] text-sm text-[#888] hover:text-[#e5e5e5] hover:border-[#444] transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-2"
 				>
 					{loadingMore ? 'Loading…' : 'Load more'}
 				</button>
