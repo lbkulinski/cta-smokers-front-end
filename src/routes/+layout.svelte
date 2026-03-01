@@ -4,7 +4,7 @@
 	let { children } = $props();
 </script>
 
-<div class="min-h-screen bg-[#0d0d0d] flex flex-col">
+<div class="min-h-dvh bg-[#0d0d0d] flex flex-col">
 	<nav class="bg-[#111111] border-b border-[#c60c30] shadow-lg">
 		<div class="max-w-4xl mx-auto px-4 py-3">
 			<div class="flex items-center justify-between">
@@ -28,7 +28,7 @@
 	</main>
 
 	<footer class="bg-[#111111] border-t border-[#222222] mt-auto">
-		<div class="max-w-4xl mx-auto px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex gap-6 text-xs font-medium text-[#666666]">
+		<div class="max-w-4xl mx-auto px-4 py-3 flex gap-6 text-xs font-medium text-[#666666]">
 			<a href="https://cta4j.app" target="_blank" rel="noopener noreferrer" class="hover:text-[#aaaaaa] transition-colors">cta4j.app</a>
 			<a href="https://buymeacoffee.com/cta4j" target="_blank" rel="noopener noreferrer" class="hover:text-[#aaaaaa] transition-colors">Buy Me a Coffee</a>
 		</div>
