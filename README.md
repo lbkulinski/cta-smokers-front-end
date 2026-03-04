@@ -72,10 +72,12 @@ npm run check
 src/
 ├── app.css                    Global styles (Tailwind import)
 ├── routes/
-│   ├── +layout.ts             SPA config (ssr=false, prerender=false)
+│   ├── +layout.ts             Root layout config (prerender=false)
 │   ├── +layout.svelte         Navigation bar + shared layout
+│   ├── +page.ts               Home page config (ssr=false)
 │   ├── +page.svelte           Home page — today's top 25 reports
 │   └── report/
+│       ├── +page.ts           Report page config (ssr=true, prerender=true)
 │       └── +page.svelte       Report submission form
 └── lib/
     ├── types.ts               Line enum, Station, report request/response types
