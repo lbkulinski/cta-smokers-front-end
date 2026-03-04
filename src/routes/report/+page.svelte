@@ -82,8 +82,8 @@
 			runNumber = '';
 			focusAfterUpdate(() => successEl);
 		} catch (e_) {
-			if (e_ instanceof TypeError && e_.message === 'Failed to fetch') {
-				error = 'Network error. Please check your connection.';
+			if (e_ instanceof TypeError) {
+				error = 'Unable to submit report. Please try again.';
 			} else {
 				error = e_ instanceof Error ? e_.message : 'Failed to submit report.';
 			}
