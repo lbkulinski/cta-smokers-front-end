@@ -193,6 +193,7 @@
 
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 	function onVisible() {
+		if (document.visibilityState !== 'visible') return;
 		if (debounceTimer) return;
 		debounceTimer = setTimeout(() => { debounceTimer = null; }, 2000);
 		refresh();

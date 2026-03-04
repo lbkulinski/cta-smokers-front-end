@@ -1,7 +1,12 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import '../app.css';
 
 	let { children } = $props();
+
+	onMount(() => {
+		document.body.style.visibility = 'visible';
+	});
 </script>
 
 <div class="min-h-dvh bg-[#0d0d0d] flex flex-col">
@@ -30,6 +35,7 @@
 	<footer class="bg-[#111111] border-t border-[#222222] mt-auto">
 		<div class="max-w-4xl mx-auto px-4 py-3 flex gap-6 text-xs font-medium text-[#888888]">
 			<a href="https://cta4j.com" target="_blank" rel="noopener noreferrer" class="hover:text-[#cccccc] transition-colors focus-visible:text-[#cccccc] focus-visible:underline">cta4j.com</a>
+			<a href="https://github.com/lbkulinski/cta-smokers-api" target="_blank" rel="noopener noreferrer" class="hover:text-[#cccccc] transition-colors focus-visible:text-[#cccccc] focus-visible:underline">API</a>
 			<a href="https://buymeacoffee.com/cta4j" target="_blank" rel="noopener noreferrer" class="hover:text-[#cccccc] transition-colors focus-visible:text-[#cccccc] focus-visible:underline">Buy Me a Coffee</a>
 		</div>
 	</footer>
