@@ -2,9 +2,11 @@ import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest
 
 const SMOKERS_BASE_URL = import.meta.env.VITE_SMOKERS_API_BASE_URL ?? 'https://api.ctasmokers.com';
 
+export class RateLimitError extends Error {}
+
 function checkResponse(res: Response, context: string): void {
 	if (res.status === 429) {
-		throw new Error('Too many requests. Please wait before submitting again.');
+		throw new RateLimitError('Too many requests. Please wait before submitting again.');
 	}
 	if (!res.ok) {
 		throw new Error(`${context}: ${res.status} ${res.statusText}`);
