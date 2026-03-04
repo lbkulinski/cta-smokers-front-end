@@ -1,12 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import '../app.css';
 
 	let { children } = $props();
-
-	onMount(() => {
-		document.body.style.visibility = 'visible';
-	});
 </script>
 
 <div class="min-h-dvh bg-[#0d0d0d] flex flex-col">
