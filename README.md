@@ -30,7 +30,7 @@ npm install
 
 ### Configure environment (optional)
 
-Copy `.env.example` to `.env.local` and override the API base URL if running the backend locally:
+Copy `.env.example` to `.env.local` for local development. The app defaults to the production URL when the variable is unset:
 
 ```sh
 cp .env.example .env.local

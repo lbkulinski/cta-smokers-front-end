@@ -5,7 +5,7 @@
 	let { children } = $props();
 
 	onMount(() => {
-		document.body.style.visibility = '';
+		document.body.style.visibility = 'visible';
 	});
 </script>
 
