@@ -1,42 +1,95 @@
-# sv
+# CTA Smokers — Front End
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A web app for reporting and tracking smoking incidents on Chicago Transit Authority (CTA) trains. Built with SvelteKit as a static SPA.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **Live feed** — top 25 smoking reports for today, grouped by line and destination, with 30-second auto-refresh
+- **Submit reports** — report a smoking incident with line, destination, next stop, car number, and optional run number
+- **All 8 CTA lines** — Red, Blue, Brown, Green, Orange, Purple, Pink, and Yellow
+
+## Tech Stack
+
+- [SvelteKit](https://kit.svelte.dev/) (static SPA via `@sveltejs/adapter-static`)
+- [Svelte 5](https://svelte.dev/) with runes (`$state`, `$derived`, `$props`)
+- [Tailwind CSS v4](https://tailwindcss.com/) via `@tailwindcss/vite`
+- TypeScript
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+
+### Install dependencies
 
 ```sh
-# create a new project
-npx sv create my-app
+npm install
 ```
 
-To recreate this project with the same configuration:
+### Configure environment (optional)
+
+Copy `.env.example` to `.env.local` and override the API base URL if running the backend locally:
 
 ```sh
-# recreate this project
-npx sv create --template minimal --types ts --install npm .
+cp .env.example .env.local
 ```
 
-## Developing
+| Variable | Default | Description |
+|---|---|---|
+| `VITE_SMOKERS_API_BASE_URL` | `https://api.ctasmokers.com` | CTA Smokers API |
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### Develop
 
 ```sh
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-To create a production version of your app:
+### Build
 
 ```sh
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+Outputs a static site to `build/`. Serve with any static file host or preview locally:
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```sh
+npm run preview
+```
+
+### Type-check
+
+```sh
+npm run check
+```
+
+## Project Structure
+
+```
+src/
+├── app.css                    Global styles (Tailwind import)
+├── routes/
+│   ├── +layout.ts             SPA config (ssr=false, prerender=false)
+│   ├── +layout.svelte         Navigation bar + shared layout
+│   ├── +page.svelte           Home page — today's top 25 reports
+│   └── report/
+│       └── +page.svelte       Report submission form
+└── lib/
+    ├── types.ts               Line enum, Station, report request/response types
+    ├── constants.ts           LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES
+    ├── api.ts                 API client functions
+    └── cta-stops.json         CTA station data
+```
+
+## API
+
+The app consumes the CTA Smokers API (`https://api.ctasmokers.com`):
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/cta/reports/smoking/{date}` | Fetch reports for a date (paginated) |
+| `GET` | `/api/cta/reports/smoking/{date}/{reportId}` | Fetch a single report |
+| `POST` | `/api/cta/reports/smoking` | Submit a new report |
