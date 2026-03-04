@@ -83,7 +83,7 @@
 			focusAfterUpdate(() => successEl);
 		} catch (e_) {
 			if (e_ instanceof TypeError && e_.message === 'Failed to fetch') {
-				error = 'Too many requests. Please wait before submitting again.';
+				error = 'Network error. Please check your connection.';
 			} else {
 				error = e_ instanceof Error ? e_.message : 'Failed to submit report.';
 			}
