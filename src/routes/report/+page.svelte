@@ -218,7 +218,7 @@
 				aria-describedby="carNumberHint"
 				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
 			/>
-			<p id="carNumberHint" class="text-xs text-[#666] mt-1">Found on a placard near the doors inside the car and on the exterior ends.</p>
+			<p id="carNumberHint" class="text-xs text-[#666] mt-1">Displayed at both ends of the car's interior and on the exterior beside the sliding exit doors.</p>
 		</div>
 
 		<div>
