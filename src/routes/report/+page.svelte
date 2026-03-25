@@ -215,8 +215,10 @@
 				placeholder="e.g. 5432"
 				required
 				aria-required="true"
+				aria-describedby="carNumberHint"
 				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
 			/>
+			<p id="carNumberHint" class="text-xs text-[#888] mt-1">Displayed at both ends of the car's interior and on the exterior beside the sliding exit doors.</p>
 		</div>
 
 		<div>
@@ -230,8 +232,10 @@
 				bind:value={runNumber}
 				oninput={() => { runNumber = runNumber.replace(/\D/g, ''); }}
 				placeholder="e.g. 101"
+				aria-describedby="runNumberHint"
 				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
 			/>
+			<p id="runNumberHint" class="text-xs text-[#888] mt-1">Displayed in the operator's cab window at the front of the train.</p>
 		</div>
 
 		<button
