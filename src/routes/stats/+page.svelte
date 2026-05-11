@@ -2,9 +2,11 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import type { AggregatePeriod } from '$lib/types';
+	import { Line } from '$lib/types';
 	import { getCurrentDate } from '$lib/date-utils';
 	import PeriodTabs from '$lib/components/PeriodTabs.svelte';
 	import PeriodPicker from '$lib/components/PeriodPicker.svelte';
+	import Leaderboard from '$lib/components/Leaderboard.svelte';
 
 	let period = $derived((page.url.searchParams.get('period') ?? 'month') as AggregatePeriod);
 	let date = $derived(
@@ -12,9 +14,11 @@
 		(period !== 'all-time' ? getCurrentDate(period) : '')
 	);
 	let pickerOpen = $state(false);
+	let selectedLine = $state<Line | null>(null);
 
 	function updateParams(newPeriod: AggregatePeriod, newDate: string): void {
 		pickerOpen = false;
+		selectedLine = null;
 		const params = new URLSearchParams();
 		params.set('period', newPeriod);
 		if (newPeriod !== 'all-time' && newDate) params.set('date', newDate);
@@ -22,6 +26,7 @@
 	}
 
 	function onPickerSelect(value: string): void {
+		pickerOpen = false;
 		updateParams(period, value);
 	}
 </script>
@@ -50,4 +55,6 @@
 	{/if}
 </div>
 
-<p class="text-[#555] text-sm">Leaderboard coming next</p>
+<Leaderboard {period} {date} {selectedLine} onselect={(line) => (selectedLine = line)} />
+
+<p class="text-[#555] text-sm mt-4">Trend chart coming next — click a line above to select it</p>
