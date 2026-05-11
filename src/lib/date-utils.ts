@@ -1,5 +1,7 @@
 import type { AggregatePeriod } from './types';
 
+const APP_LAUNCH_YEAR = 2026;
+
 export function getISOWeekString(date: Date): string {
 	const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 	const dayNum = d.getUTCDay() || 7;
@@ -39,8 +41,8 @@ export function stepPeriod(period: AggregatePeriod, date: string, delta: number)
 		return `${year}-W${String(week).padStart(2, '0')}`;
 	}
 	if (period === 'day') {
-		const d = new Date(date + 'T00:00:00');
-		d.setDate(d.getDate() + delta);
+		const d = new Date(date + 'T00:00:00Z');
+		d.setUTCDate(d.getUTCDate() + delta);
 		return d.toISOString().slice(0, 10);
 	}
 	return date;
@@ -75,7 +77,7 @@ export function getTrendSubPeriods(
 	if (period === 'all-time') {
 		const currentYear = now.getFullYear();
 		const result: { subPeriod: AggregatePeriod; value: string }[] = [];
-		for (let y = 2026; y <= currentYear; y++) {
+		for (let y = APP_LAUNCH_YEAR; y <= currentYear; y++) {
 			result.push({ subPeriod: 'year', value: String(y) });
 		}
 		return result;

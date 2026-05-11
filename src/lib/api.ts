@@ -45,6 +45,15 @@ export async function submitReport(req: SubmitReportRequest): Promise<SmokingRep
 
 export async function fetchAggregate(
 	line: Line,
+	period: 'all-time'
+): Promise<SmokingReportAggregateResponse>;
+export async function fetchAggregate(
+	line: Line,
+	period: Exclude<AggregatePeriod, 'all-time'>,
+	value: string
+): Promise<SmokingReportAggregateResponse>;
+export async function fetchAggregate(
+	line: Line,
 	period: AggregatePeriod,
 	value?: string
 ): Promise<SmokingReportAggregateResponse> {
