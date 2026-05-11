@@ -55,7 +55,7 @@
 		if (failCount === LINE_ORDER.length) {
 			const first = settled.find(r => r.status === 'rejected') as PromiseRejectedResult;
 			fullError = first.reason instanceof RateLimitError
-				? 'Too many requests. Please wait before trying again.'
+				? first.reason.message
 				: 'Failed to load leaderboard. Please try again.';
 			loading = false;
 			return;
