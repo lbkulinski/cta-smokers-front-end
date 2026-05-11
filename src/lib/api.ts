@@ -1,4 +1,5 @@
-import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest } from './types';
+import { Line } from './types';
+import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest, SmokingReportAggregateResponse, AggregatePeriod } from './types';
 
 const SMOKERS_BASE_URL = import.meta.env.VITE_SMOKERS_API_BASE_URL ?? 'https://api.ctasmokers.com';
 
@@ -39,5 +40,17 @@ export async function submitReport(req: SubmitReportRequest): Promise<SmokingRep
 		body: JSON.stringify(req)
 	});
 	checkResponse(res, 'Failed to submit report');
+	return res.json();
+}
+
+export async function fetchAggregate(
+	line: Line,
+	period: AggregatePeriod,
+	value?: string
+): Promise<SmokingReportAggregateResponse> {
+	const base = `${SMOKERS_BASE_URL}/api/cta/reports/smoking/aggregates/${line}`;
+	const url = period === 'all-time' ? `${base}/all-time` : `${base}/${period}/${value}`;
+	const res = await fetch(url);
+	checkResponse(res, 'Failed to fetch aggregate');
 	return res.json();
 }
