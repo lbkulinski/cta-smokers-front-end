@@ -7,6 +7,7 @@
 	import PeriodTabs from '$lib/components/PeriodTabs.svelte';
 	import PeriodPicker from '$lib/components/PeriodPicker.svelte';
 	import Leaderboard from '$lib/components/Leaderboard.svelte';
+	import TrendChart from '$lib/components/TrendChart.svelte';
 
 	let period = $derived((page.url.searchParams.get('period') ?? 'month') as AggregatePeriod);
 	let date = $derived(
@@ -57,4 +58,6 @@
 
 <Leaderboard {period} {date} {selectedLine} onselect={(line) => (selectedLine = line)} />
 
-<p class="text-[#555] text-sm mt-4">Trend chart coming next — click a line above to select it</p>
+{#if selectedLine !== null && period !== 'day'}
+	<TrendChart line={selectedLine} {period} {date} />
+{/if}
