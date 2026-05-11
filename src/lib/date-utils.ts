@@ -113,13 +113,11 @@ export function getTrendSubPeriods(
 		const jan4 = new Date(Date.UTC(year, 0, 4));
 		const monday = new Date(jan4);
 		monday.setUTCDate(jan4.getUTCDate() - ((jan4.getUTCDay() || 7) - 1) + (week - 1) * 7);
-		const today = now.toISOString().slice(0, 10);
 		const result: { subPeriod: AggregatePeriod; value: string }[] = [];
 		for (let d = 0; d < 7; d++) {
 			const day = new Date(monday);
 			day.setUTCDate(monday.getUTCDate() + d);
-			const dayStr = day.toISOString().slice(0, 10);
-			if (dayStr <= today) result.push({ subPeriod: 'day', value: dayStr });
+			result.push({ subPeriod: 'day', value: day.toISOString().slice(0, 10) });
 		}
 		return result;
 	}
@@ -141,6 +139,7 @@ export function formatTrendLabel(
 		const [year, month, day] = value.split('-').map(Number);
 		const d = new Date(year, month - 1, day);
 		if (parentPeriod === 'week') return d.toLocaleDateString('en-US', { weekday: 'short' });
+		if (parentPeriod === 'month') return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 		return String(day);
 	}
 	return value;
