@@ -71,12 +71,12 @@ export function formatPeriodLabel(period: AggregatePeriod, date: string): string
 export function getTrendSubPeriods(
 	period: AggregatePeriod,
 	date: string
-): { subPeriod: AggregatePeriod; value: string }[] {
+): { subPeriod: Exclude<AggregatePeriod, 'all-time'>; value: string }[] {
 	const now = new Date();
 
 	if (period === 'all-time') {
 		const currentYear = now.getFullYear();
-		const result: { subPeriod: AggregatePeriod; value: string }[] = [];
+		const result: { subPeriod: Exclude<AggregatePeriod, 'all-time'>; value: string }[] = [];
 		for (let y = APP_LAUNCH_YEAR; y <= currentYear; y++) {
 			result.push({ subPeriod: 'year', value: String(y) });
 		}
@@ -86,7 +86,7 @@ export function getTrendSubPeriods(
 	if (period === 'year') {
 		const year = parseInt(date);
 		const maxMonth = year < now.getFullYear() ? 12 : now.getMonth() + 1;
-		const result: { subPeriod: AggregatePeriod; value: string }[] = [];
+		const result: { subPeriod: Exclude<AggregatePeriod, 'all-time'>; value: string }[] = [];
 		for (let m = 1; m <= maxMonth; m++) {
 			result.push({ subPeriod: 'month', value: `${year}-${String(m).padStart(2, '0')}` });
 		}
@@ -96,7 +96,7 @@ export function getTrendSubPeriods(
 	if (period === 'month') {
 		const [year, month] = date.split('-').map(Number);
 		const daysInMonth = new Date(year, month, 0).getDate();
-		const result: { subPeriod: AggregatePeriod; value: string }[] = [];
+		const result: { subPeriod: Exclude<AggregatePeriod, 'all-time'>; value: string }[] = [];
 		for (let d = 1; d <= daysInMonth; d++) {
 			result.push({ subPeriod: 'day', value: `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}` });
 		}
@@ -110,7 +110,7 @@ export function getTrendSubPeriods(
 		const jan4 = new Date(Date.UTC(year, 0, 4));
 		const monday = new Date(jan4);
 		monday.setUTCDate(jan4.getUTCDate() - ((jan4.getUTCDay() || 7) - 1) + (week - 1) * 7);
-		const result: { subPeriod: AggregatePeriod; value: string }[] = [];
+		const result: { subPeriod: Exclude<AggregatePeriod, 'all-time'>; value: string }[] = [];
 		for (let d = 0; d < 7; d++) {
 			const day = new Date(monday);
 			day.setUTCDate(monday.getUTCDate() + d);

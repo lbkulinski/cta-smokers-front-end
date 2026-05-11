@@ -32,7 +32,7 @@
 		try {
 			const fetched = await Promise.all(
 				subPeriods.map(({ subPeriod, value }) =>
-					fetchAggregate(line, subPeriod as Exclude<AggregatePeriod, 'all-time'>, value).then(res => ({
+					fetchAggregate(line, subPeriod, value).then(res => ({
 						label: formatTrendLabel(period, subPeriod, value),
 						count: res.reportCount
 					}))
@@ -99,10 +99,10 @@
 
 	{:else}
 		<div class="px-4 pt-4 pb-2">
-			<div class="flex items-end gap-1" style="height: 96px;">
+			<div class="flex items-end gap-1" style="height: 96px;" aria-hidden="true">
 				{#each bars as bar}
 					{@const height = Math.max((bar.count / maxCount) * 100, bar.count > 0 ? 2 : 0)}
-					<div class="flex-1 min-w-0" title="{bar.label}: {bar.count} report{bar.count !== 1 ? 's' : ''}">
+					<div class="flex-1 min-w-0">
 						<div
 							class="w-full rounded-t transition-[height] duration-300"
 							style="height: {height}%; background-color: {color}; opacity: 0.85;"
@@ -110,7 +110,7 @@
 					</div>
 				{/each}
 			</div>
-			<div class="flex gap-1 mt-1.5">
+			<div class="flex gap-1 mt-1.5" aria-hidden="true">
 				{#each bars as bar, i}
 					<div class="flex-1 min-w-0 text-center overflow-hidden">
 						{#if i % showEveryNth === 0 || i === bars.length - 1}
@@ -119,6 +119,17 @@
 					</div>
 				{/each}
 			</div>
+			<table class="sr-only">
+				<caption>{lineName} trend</caption>
+				<tbody>
+					{#each bars as bar}
+						<tr>
+							<th scope="row">{bar.label}</th>
+							<td>{bar.count} report{bar.count !== 1 ? 's' : ''}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
 		</div>
 	{/if}
 </div>
