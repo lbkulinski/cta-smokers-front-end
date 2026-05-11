@@ -2,11 +2,12 @@
 	import type { AggregatePeriod } from '$lib/types';
 	import { stepPeriod, isAtCurrentPeriod, formatPeriodLabel, getCurrentDate } from '$lib/date-utils';
 
-	let { period, date, onchange, onopenpicker }: {
+	let { period, date, onchange, onopenpicker, pickerTriggerEl = $bindable<HTMLButtonElement | null>(null) }: {
 		period: AggregatePeriod;
 		date: string;
 		onchange: (period: AggregatePeriod, date: string) => void;
 		onopenpicker: () => void;
+		pickerTriggerEl?: HTMLButtonElement | null;
 	} = $props();
 
 	const TABS: { value: AggregatePeriod; label: string }[] = [
@@ -53,6 +54,7 @@
 			‹
 		</button>
 		<button
+			bind:this={pickerTriggerEl}
 			onclick={onopenpicker}
 			aria-haspopup="dialog"
 			class="text-[#e5e5e5] text-sm font-semibold underline underline-offset-4 decoration-[#444] hover:decoration-[#888] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded"

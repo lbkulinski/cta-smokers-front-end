@@ -16,6 +16,7 @@
 	);
 	let pickerOpen = $state(false);
 	let selectedLine = $state<Line | null>(null);
+	let pickerTriggerEl = $state<HTMLButtonElement | null>(null);
 
 	function updateParams(newPeriod: AggregatePeriod, newDate: string): void {
 		pickerOpen = false;
@@ -45,13 +46,13 @@
 <h1 class="text-2xl font-bold text-[#e5e5e5] mb-4">Statistics</h1>
 
 <div class="mb-6 relative">
-	<PeriodTabs {period} {date} onchange={updateParams} onopenpicker={() => (pickerOpen = !pickerOpen)} />
+	<PeriodTabs {period} {date} onchange={updateParams} onopenpicker={() => (pickerOpen = !pickerOpen)} bind:pickerTriggerEl />
 	{#if pickerOpen && period !== 'all-time'}
 		<PeriodPicker
 			period={period}
 			{date}
 			onselect={onPickerSelect}
-			onclose={() => (pickerOpen = false)}
+			onclose={() => { pickerOpen = false; pickerTriggerEl?.focus(); }}
 		/>
 	{/if}
 </div>

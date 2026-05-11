@@ -2,7 +2,7 @@
 	import { Line } from '$lib/types';
 	import type { AggregatePeriod } from '$lib/types';
 	import { fetchAggregate, RateLimitError } from '$lib/api';
-	import { LINE_COLORS, LINE_DISPLAY_NAMES } from '$lib/constants';
+	import { LINE_COLORS, LINE_DISPLAY_NAMES, LINE_TEXT_COLORS } from '$lib/constants';
 	import { getTrendSubPeriods, formatTrendLabel } from '$lib/date-utils';
 
 	let { line, period, date }: {
@@ -56,6 +56,7 @@
 
 	let maxCount = $derived(Math.max(...bars.map(b => b.count), 1));
 	let color = $derived(LINE_COLORS[line]);
+	let textColor = $derived(LINE_TEXT_COLORS[line]);
 	let lineName = $derived(LINE_DISPLAY_NAMES[line].replace(' Line', ''));
 	let showEveryNth = $derived(bars.length > 12 ? Math.ceil(bars.length / 6) : 1);
 </script>
@@ -64,7 +65,7 @@
 	<div class="px-4 py-3 border-b border-[#2a2a2a] flex items-center gap-2">
 		<span
 			class="text-xs font-bold px-2 py-0.5 rounded-full"
-			style="background-color: {color}; color: white;"
+			style="background-color: {color}; color: {textColor};"
 		>
 			{lineName}
 		</span>
