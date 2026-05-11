@@ -12,12 +12,14 @@
 				<div class="hidden sm:flex gap-6 text-sm font-medium text-[#aaaaaa]">
 					<a href="/" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Home</a>
 					<a href="/report" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Report a Smoker</a>
+					<a href="/stats" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Stats</a>
 					<a href="mailto:admin@ctasmokers.com" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Contact</a>
 				</div>
 			</div>
 			<div class="flex sm:hidden gap-4 mt-2 text-xs font-medium text-[#aaaaaa] flex-wrap">
 				<a href="/" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Home</a>
 				<a href="/report" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Report a Smoker</a>
+				<a href="/stats" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Stats</a>
 				<a href="mailto:admin@ctasmokers.com" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Contact</a>
 			</div>
 		</div>
