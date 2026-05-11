@@ -79,7 +79,8 @@
 	}
 
 	function isDayDisabled(dayDate: string): boolean {
-		return dayDate > now.toISOString().slice(0, 10);
+		const todayLocal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+		return dayDate > todayLocal;
 	}
 
 	function navDayMonth(delta: number): void {
@@ -93,7 +94,7 @@
 		(pickerYear === now.getFullYear() && pickerMonth >= now.getMonth() + 1)
 	);
 
-	let dayNavPrevDisabled = $derived(pickerYear <= 2026 && pickerMonth <= 1);
+	let dayNavPrevDisabled = $derived(pickerYear < 2026 || (pickerYear === 2026 && pickerMonth <= 1));
 
 	let popoverEl = $state<HTMLDivElement | null>(null);
 
