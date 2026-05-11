@@ -92,13 +92,30 @@
 		pickerYear > now.getFullYear() ||
 		(pickerYear === now.getFullYear() && pickerMonth >= now.getMonth() + 1)
 	);
+
+	let dayNavPrevDisabled = $derived(pickerYear <= 2026 && pickerMonth <= 1);
+
+	let popoverEl = $state<HTMLDivElement | null>(null);
+
+	$effect(() => {
+		if (popoverEl) popoverEl.focus();
+	});
 </script>
+
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') { e.preventDefault(); onclose(); } }} />
 
 <!-- Backdrop -->
 <div class="fixed inset-0 z-10" onclick={onclose} role="presentation"></div>
 
 <!-- Popover -->
-<div class="absolute top-full left-0 mt-2 z-20 bg-[#1a1a1a] border border-[#333] rounded-xl shadow-2xl overflow-hidden min-w-[220px]">
+<div
+	bind:this={popoverEl}
+	tabindex="-1"
+	role="dialog"
+	aria-modal="true"
+	aria-label="Select {period}"
+	class="absolute top-full left-0 mt-2 z-20 bg-[#1a1a1a] border border-[#333] rounded-xl shadow-2xl overflow-hidden min-w-[220px] focus:outline-none"
+>
 
 	{#if period === 'month'}
 		<div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
@@ -152,12 +169,12 @@
 
 	{:else if period === 'day'}
 		<div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
-			<button onclick={() => navDayMonth(-1)} class="text-[#aaa] hover:text-white p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
+			<button onclick={() => navDayMonth(-1)} disabled={dayNavPrevDisabled} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
 			<span class="text-[#e5e5e5] text-sm font-semibold">{MONTH_NAMES[pickerMonth - 1]} {pickerYear}</span>
 			<button onclick={() => navDayMonth(1)} disabled={dayNavNextDisabled} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
 		</div>
 		<div class="grid grid-cols-7 px-3 pt-2 pb-1">
-			{#each ['M','T','W','T','F','S','S'] as h}
+			{#each ['Mo','Tu','We','Th','Fr','Sa','Su'] as h}
 				<div class="text-center text-[#555] text-xs">{h}</div>
 			{/each}
 		</div>

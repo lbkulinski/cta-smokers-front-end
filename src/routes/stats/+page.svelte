@@ -22,7 +22,6 @@
 	}
 
 	function onPickerSelect(value: string): void {
-		pickerOpen = false;
 		updateParams(period, value);
 	}
 </script>
