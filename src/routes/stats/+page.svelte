@@ -4,6 +4,7 @@
 	import type { AggregatePeriod } from '$lib/types';
 	import { getCurrentDate } from '$lib/date-utils';
 	import PeriodTabs from '$lib/components/PeriodTabs.svelte';
+	import PeriodPicker from '$lib/components/PeriodPicker.svelte';
 
 	let period = $derived((page.url.searchParams.get('period') ?? 'month') as AggregatePeriod);
 	let date = $derived(
@@ -19,6 +20,11 @@
 		if (newPeriod !== 'all-time' && newDate) params.set('date', newDate);
 		goto(`/stats?${params}`, { replaceState: true, keepFocus: true, noScroll: true });
 	}
+
+	function onPickerSelect(value: string): void {
+		pickerOpen = false;
+		updateParams(period, value);
+	}
 </script>
 
 <svelte:head>
@@ -33,8 +39,16 @@
 
 <h1 class="text-2xl font-bold text-[#e5e5e5] mb-4">Statistics</h1>
 
-<div class="mb-6">
+<div class="mb-6 relative">
 	<PeriodTabs {period} {date} onchange={updateParams} onopenpicker={() => (pickerOpen = !pickerOpen)} />
+	{#if pickerOpen && period !== 'all-time'}
+		<PeriodPicker
+			period={period}
+			{date}
+			onselect={onPickerSelect}
+			onclose={() => (pickerOpen = false)}
+		/>
+	{/if}
 </div>
 
-<p class="text-[#555] text-sm">Picker open: {pickerOpen} — leaderboard coming next</p>
+<p class="text-[#555] text-sm">Leaderboard coming next</p>
