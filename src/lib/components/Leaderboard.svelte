@@ -53,7 +53,8 @@
 		}
 
 		if (failCount === LINE_ORDER.length) {
-			const first = settled.find(r => r.status === 'rejected') as PromiseRejectedResult;
+			const first = settled.find((r): r is PromiseRejectedResult => r.status === 'rejected');
+			if (!first) return;
 			fullError = first.reason instanceof RateLimitError
 				? first.reason.message
 				: 'Failed to load leaderboard. Please try again.';
@@ -80,7 +81,7 @@
 </script>
 
 {#if loading}
-	<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl overflow-hidden" aria-busy="true" aria-label="Loading leaderboard">
+	<div role="status" aria-label="Loading leaderboard" class="bg-[#171717] border border-[#2a2a2a] rounded-xl overflow-hidden">
 		<div class="px-4 py-3 border-b border-[#2a2a2a]">
 			<span class="text-[#888] text-xs uppercase tracking-wider font-semibold">Leaderboard</span>
 		</div>
