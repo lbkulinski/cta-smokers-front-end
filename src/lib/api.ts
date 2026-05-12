@@ -60,6 +60,7 @@ export async function fetchAggregate(
 	const base = `${SMOKERS_BASE_URL}/api/cta/reports/smoking/aggregates/${line}`;
 	const url = period === 'all-time' ? `${base}/all-time` : `${base}/${period}/${value}`;
 	const res = await fetch(url);
+	if (res.status === 404) return { reportCount: 0 };
 	checkResponse(res, 'Failed to fetch aggregate');
 	return res.json();
 }

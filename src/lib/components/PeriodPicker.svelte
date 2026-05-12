@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { AggregatePeriod } from '$lib/types';
-	import { isoWeeksInYear, getISOWeekString } from '$lib/date-utils';
+	import { isoWeeksInYear, getISOWeekString, getChicagoParts, formatWeekRange } from '$lib/date-utils';
 
 	let { period, date, onselect, onclose }: {
 		period: Exclude<AggregatePeriod, 'all-time'>;
@@ -9,7 +9,10 @@
 		onclose: () => void;
 	} = $props();
 
-	const now = new Date();
+	const { year: nowYear, month: nowMonth, day: nowDay } = getChicagoParts();
+	const todayStr = `${nowYear}-${String(nowMonth).padStart(2, '0')}-${String(nowDay).padStart(2, '0')}`;
+	const MIN_DATE = '2026-02-28';
+	const MIN_WEEK = getISOWeekString(2026, 2, 28);
 	const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 	const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -21,18 +24,19 @@
 		if (period === 'day') return parseInt(date.split('-')[0]);
 		if (period === 'month') return parseInt(date.split('-')[0]);
 		if (period === 'year') return parseInt(date);
-		return now.getFullYear();
+		return nowYear;
 	}
 
 	function initPickerMonth(): number {
 		if (period === 'day') return parseInt(date.split('-')[1]);
-		return now.getMonth() + 1;
+		return nowMonth;
 	}
 
 	// Month picker helpers
 	function isMonthDisabled(month: number): boolean {
-		return pickerYear > now.getFullYear() ||
-			(pickerYear === now.getFullYear() && month > now.getMonth() + 1);
+		return pickerYear > nowYear ||
+			(pickerYear === nowYear && month > nowMonth) ||
+			(pickerYear === 2026 && month < 2);
 	}
 
 	function isMonthSelected(month: number): boolean {
@@ -43,18 +47,19 @@
 	// Year picker helpers
 	function getYearList(): number[] {
 		const years: number[] = [];
-		for (let y = now.getFullYear(); y >= 2026; y--) years.push(y);
+		for (let y = nowYear; y >= 2026; y--) years.push(y);
 		return years;
 	}
 
 	// Week picker helpers
 	function getWeekList(): string[] {
 		const total = isoWeeksInYear(pickerYear);
-		const currentWeek = getISOWeekString(now);
+		const currentWeek = getISOWeekString(nowYear, nowMonth, nowDay);
 		const weeks: string[] = [];
-		for (let w = 1; w <= total; w++) {
+		for (let w = total; w >= 1; w--) {
 			const weekStr = `${pickerYear}-W${String(w).padStart(2, '0')}`;
-			if (pickerYear < now.getFullYear() || weekStr <= currentWeek) weeks.push(weekStr);
+			if (pickerYear === 2026 && weekStr < MIN_WEEK) break;
+			if (pickerYear < nowYear || weekStr <= currentWeek) weeks.push(weekStr);
 		}
 		return weeks;
 	}
@@ -79,8 +84,7 @@
 	}
 
 	function isDayDisabled(dayDate: string): boolean {
-		const todayLocal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-		return dayDate > todayLocal;
+		return dayDate > todayStr || dayDate < MIN_DATE;
 	}
 
 	function navDayMonth(delta: number): void {
@@ -90,11 +94,11 @@
 	}
 
 	let dayNavNextDisabled = $derived(
-		pickerYear > now.getFullYear() ||
-		(pickerYear === now.getFullYear() && pickerMonth >= now.getMonth() + 1)
+		pickerYear > nowYear ||
+		(pickerYear === nowYear && pickerMonth >= nowMonth)
 	);
 
-	let dayNavPrevDisabled = $derived(pickerYear < 2026 || (pickerYear === 2026 && pickerMonth <= 1));
+	let dayNavPrevDisabled = $derived(pickerYear < 2026 || (pickerYear === 2026 && pickerMonth <= 2));
 
 	let popoverEl = $state<HTMLDivElement | null>(null);
 
@@ -122,7 +126,7 @@
 		<div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
 			<button onclick={() => pickerYear--} disabled={pickerYear <= 2026} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
 			<span class="text-[#e5e5e5] text-sm font-semibold">{pickerYear}</span>
-			<button onclick={() => pickerYear++} disabled={pickerYear >= now.getFullYear()} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
+			<button onclick={() => pickerYear++} disabled={pickerYear >= nowYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
 		</div>
 		<div class="grid grid-cols-4 gap-1 p-3">
 			{#each MONTHS_SHORT as monthName, i}
@@ -155,15 +159,15 @@
 		<div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
 			<button onclick={() => pickerYear--} disabled={pickerYear <= 2026} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
 			<span class="text-[#e5e5e5] text-sm font-semibold">{pickerYear}</span>
-			<button onclick={() => pickerYear++} disabled={pickerYear >= now.getFullYear()} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
+			<button onclick={() => pickerYear++} disabled={pickerYear >= nowYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
 		</div>
 		<div class="max-h-60 overflow-y-auto py-1">
 			{#each getWeekList() as week}
 				<button
 					onclick={() => onselect(week)}
-					class="w-full text-left px-4 py-2 text-sm font-mono transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-[-2px] {week === date ? 'bg-[#c60c30] text-white font-bold' : 'text-[#aaa] hover:bg-[#2a2a2a] hover:text-white'}"
+					class="w-full text-left px-4 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-[-2px] {week === date ? 'bg-[#c60c30] text-white font-bold' : 'text-[#aaa] hover:bg-[#2a2a2a] hover:text-white'}"
 				>
-					{week}
+					{formatWeekRange(week)}
 				</button>
 			{/each}
 		</div>

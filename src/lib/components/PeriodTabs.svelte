@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { AggregatePeriod } from '$lib/types';
-	import { stepPeriod, isAtCurrentPeriod, formatPeriodLabel, getCurrentDate } from '$lib/date-utils';
+	import { stepPeriod, isAtCurrentPeriod, isAtMinPeriod, formatPeriodLabel, getCurrentDate } from '$lib/date-utils';
 
 	let { period, date, onchange, onopenpicker, pickerTriggerEl = $bindable<HTMLButtonElement | null>(null) }: {
 		period: AggregatePeriod;
@@ -19,6 +19,7 @@
 	];
 
 	let atCurrent = $derived(isAtCurrentPeriod(period, date));
+	let atMin = $derived(isAtMinPeriod(period, date));
 	let label = $derived(formatPeriodLabel(period, date));
 
 	function selectTab(newPeriod: AggregatePeriod): void {
@@ -48,8 +49,9 @@
 	<div class="flex items-center gap-3">
 		<button
 			onclick={() => step(-1)}
+			disabled={atMin}
 			aria-label="Previous {period[0].toUpperCase() + period.slice(1)}"
-			class="bg-[#1f1f1f] border border-[#2a2a2a] text-[#aaa] hover:text-white rounded-lg px-3 py-1.5 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+			class="bg-[#1f1f1f] border border-[#2a2a2a] text-[#aaa] hover:text-white rounded-lg px-3 py-1.5 text-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
 		>
 			‹
 		</button>

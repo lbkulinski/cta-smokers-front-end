@@ -58,7 +58,10 @@
 	let color = $derived(LINE_COLORS[line]);
 	let textColor = $derived(LINE_TEXT_COLORS[line]);
 	let lineName = $derived(LINE_DISPLAY_NAMES[line].replace(' Line', ''));
-	let showEveryNth = $derived(bars.length > 12 ? Math.ceil(bars.length / 6) : 1);
+	function shouldShowLabel(i: number): boolean {
+		if (bars.length <= 12) return true;
+		return i === 0 || (i + 1) % 5 === 0 || i === bars.length - 1;
+	}
 </script>
 
 <div class="bg-[#171717] border border-[#2a2a2a] rounded-xl overflow-hidden mt-4">
@@ -74,13 +77,16 @@
 
 	{#if loading}
 		<div role="status" aria-label="Loading trend chart" class="px-4 pt-4 pb-6">
-			<div class="flex items-end gap-1" style="height: 96px;">
-				{#each [70,40,85,55,90,45,75,60,80,50,65,35] as h}
-					<div
-						class="flex-1 animate-pulse bg-[#2a2a2a] rounded-t"
-						style="height: {h}%;"
-					></div>
-				{/each}
+			<div class="flex items-start gap-2">
+				<div class="shrink-0" style="width: 20px; height: 96px;"></div>
+				<div class="flex-1 flex items-end gap-1" style="height: 96px;">
+					{#each [70,40,85,55,90,45,75,60,80,50,65,35] as h}
+						<div
+							class="flex-1 animate-pulse bg-[#2a2a2a] rounded-t"
+							style="height: {h * 0.96}px;"
+						></div>
+					{/each}
+				</div>
 			</div>
 		</div>
 
@@ -100,21 +106,26 @@
 
 	{:else}
 		<div class="px-4 pt-4 pb-2">
-			<div class="flex items-end gap-1" style="height: 96px;" aria-hidden="true">
-				{#each bars as bar}
-					{@const height = Math.max((bar.count / maxCount) * 100, bar.count > 0 ? 2 : 0)}
-					<div class="flex-1 min-w-0">
+			<div class="flex items-start gap-2" aria-hidden="true">
+				<div class="flex flex-col justify-between text-right shrink-0" style="width: 20px; height: 96px;">
+					<span class="text-[#555] text-[9px]">{maxCount}</span>
+					<span class="text-[#555] text-[9px]">0</span>
+				</div>
+				<div class="flex-1 flex items-end gap-1" style="height: 96px;">
+					{#each bars as bar}
+						{@const h = Math.max((bar.count / maxCount) * 96, bar.count > 0 ? 2 : 0)}
 						<div
-							class="w-full rounded-t transition-[height] duration-300"
-							style="height: {height}%; background-color: {color}; opacity: 0.85;"
+							class="flex-1 min-w-0 rounded-t transition-[height] duration-300"
+							style="height: {h}px; background-color: {color}; opacity: 0.85;"
+							title={String(bar.count)}
 						></div>
-					</div>
-				{/each}
+					{/each}
+				</div>
 			</div>
-			<div class="flex gap-1 mt-1.5" aria-hidden="true">
+			<div class="flex gap-1 mt-1.5 pl-7" aria-hidden="true">
 				{#each bars as bar, i}
 					<div class="flex-1 min-w-0 text-center overflow-hidden">
-						{#if i % showEveryNth === 0 || i === bars.length - 1}
+						{#if shouldShowLabel(i)}
 							<span class="text-[#555] text-[9px] truncate block">{bar.label}</span>
 						{/if}
 					</div>
