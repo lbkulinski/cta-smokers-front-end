@@ -66,7 +66,7 @@ export function isAtMinPeriod(period: AggregatePeriod, date: string): boolean {
 	if (period === 'all-time') return true;
 	if (period === 'day') return date <= APP_MIN_DATE;
 	if (period === 'week') return date <= APP_MIN_WEEK;
-	if (period === 'month') return date <= '2026-02';
+	if (period === 'month') return date <= APP_MIN_DATE.slice(0, 7);
 	if (period === 'year') return parseInt(date) <= APP_LAUNCH_YEAR;
 	return false;
 }

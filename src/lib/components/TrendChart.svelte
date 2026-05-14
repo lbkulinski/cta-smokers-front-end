@@ -44,7 +44,7 @@
 
 			const subPeriods = getTrendSubPeriods(period, date);
 			if (subPeriods.length === 0) {
-				bars = [];
+				if (id === loadId) { bars = []; loading = false; }
 				return;
 			}
 
