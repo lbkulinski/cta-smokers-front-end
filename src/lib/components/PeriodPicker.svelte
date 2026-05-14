@@ -67,7 +67,7 @@
 	// Day picker helpers
 	type CalendarCell = { date: string; day: number } | { date: null; day: null };
 
-	function getCalendarCells(): CalendarCell[] {
+	function getCalendarRows(): CalendarCell[][] {
 		const firstDay = new Date(pickerYear, pickerMonth - 1, 1);
 		const daysInMonth = new Date(pickerYear, pickerMonth, 0).getDate();
 		const startDow = (firstDay.getDay() + 6) % 7; // Mon=0
@@ -80,8 +80,13 @@
 			});
 		}
 		while (cells.length % 7 !== 0) cells.push({ date: null, day: null });
-		return cells;
+		const rows: CalendarCell[][] = [];
+		for (let i = 0; i < cells.length; i += 7) rows.push(cells.slice(i, i + 7));
+		return rows;
 	}
+
+	const DAY_ABBRS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+	const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 	function isDayDisabled(dayDate: string): boolean {
 		return dayDate > todayStr || dayDate < MIN_DATE;
@@ -140,9 +145,9 @@
 
 	{#if period === 'month'}
 		<div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
-			<button onclick={() => pickerYear--} disabled={pickerYear <= APP_LAUNCH_YEAR} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
+			<button aria-label="Previous year" onclick={() => pickerYear--} disabled={pickerYear <= APP_LAUNCH_YEAR} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
 			<span class="text-[#e5e5e5] text-sm font-semibold">{pickerYear}</span>
-			<button onclick={() => pickerYear++} disabled={pickerYear >= nowYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
+			<button aria-label="Next year" onclick={() => pickerYear++} disabled={pickerYear >= nowYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
 		</div>
 		<div class="grid grid-cols-4 gap-1 p-3">
 			{#each MONTHS_SHORT as monthName, i}
@@ -173,9 +178,9 @@
 
 	{:else if period === 'week'}
 		<div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
-			<button onclick={() => pickerYear--} disabled={pickerYear <= APP_LAUNCH_YEAR} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
+			<button aria-label="Previous year" onclick={() => pickerYear--} disabled={pickerYear <= APP_LAUNCH_YEAR} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
 			<span class="text-[#e5e5e5] text-sm font-semibold">{pickerYear}</span>
-			<button onclick={() => pickerYear++} disabled={pickerYear >= nowYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
+			<button aria-label="Next year" onclick={() => pickerYear++} disabled={pickerYear >= nowYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
 		</div>
 		<div class="max-h-60 overflow-y-auto py-1">
 			{#each getWeekList() as week}
@@ -190,32 +195,42 @@
 
 	{:else if period === 'day'}
 		<div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
-			<button onclick={() => navDayMonth(-1)} disabled={dayNavPrevDisabled} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
+			<button aria-label="Previous month" onclick={() => navDayMonth(-1)} disabled={dayNavPrevDisabled} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
 			<span class="text-[#e5e5e5] text-sm font-semibold">{MONTH_NAMES[pickerMonth - 1]} {pickerYear}</span>
-			<button onclick={() => navDayMonth(1)} disabled={dayNavNextDisabled} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
+			<button aria-label="Next month" onclick={() => navDayMonth(1)} disabled={dayNavNextDisabled} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
 		</div>
-		<div class="grid grid-cols-7 px-3 pt-2 pb-1">
-			{#each ['Mo','Tu','We','Th','Fr','Sa','Su'] as h}
-				<div class="text-center text-[#555] text-xs">{h}</div>
-			{/each}
-		</div>
-		<div class="grid grid-cols-7 gap-0.5 px-3 pb-3">
-			{#each getCalendarCells() as cell}
-				{#if cell.date === null}
-					<div></div>
-				{:else}
-					{@const disabled = isDayDisabled(cell.date)}
-					{@const selected = cell.date === date}
-					<button
-						onclick={() => { if (!disabled) onselect(cell.date!); }}
-						disabled={disabled}
-						class="aspect-square text-xs rounded transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 {selected ? 'bg-[#c60c30] text-white font-bold' : disabled ? 'text-[#444] cursor-not-allowed' : 'text-[#aaa] hover:bg-[#2a2a2a] hover:text-white'}"
-					>
-						{cell.day}
-					</button>
-				{/if}
-			{/each}
-		</div>
+		<table class="w-full px-3 pt-2 pb-3 border-separate border-spacing-[1px]">
+			<thead>
+				<tr>
+					{#each DAY_ABBRS as abbr, i}
+						<th scope="col" class="text-center text-[#888] text-xs font-normal pb-1">
+							<abbr title={DAY_NAMES[i]} class="no-underline">{abbr}</abbr>
+						</th>
+					{/each}
+				</tr>
+			</thead>
+			<tbody>
+				{#each getCalendarRows() as row}
+					<tr>
+						{#each row as cell}
+							<td class="p-0 text-center">
+								{#if cell.date !== null}
+									{@const disabled = isDayDisabled(cell.date)}
+									{@const selected = cell.date === date}
+									<button
+										onclick={() => { if (!disabled) onselect(cell.date!); }}
+										disabled={disabled}
+										class="w-full aspect-square text-xs rounded transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 {selected ? 'bg-[#c60c30] text-white font-bold' : disabled ? 'text-[#444] cursor-not-allowed' : 'text-[#aaa] hover:bg-[#2a2a2a] hover:text-white'}"
+									>
+										{cell.day}
+									</button>
+								{/if}
+							</td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
 	{/if}
 
 </div>

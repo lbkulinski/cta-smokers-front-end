@@ -2,9 +2,10 @@
 	import type { AggregatePeriod } from '$lib/types';
 	import { stepPeriod, isAtCurrentPeriod, isAtMinPeriod, formatPeriodLabel, getCurrentDate } from '$lib/date-utils';
 
-	let { period, date, onchange, onopenpicker, pickerTriggerEl = $bindable<HTMLButtonElement | null>(null) }: {
+	let { period, date, pickerOpen = false, onchange, onopenpicker, pickerTriggerEl = $bindable<HTMLButtonElement | null>(null) }: {
 		period: AggregatePeriod;
 		date: string;
+		pickerOpen?: boolean;
 		onchange: (period: AggregatePeriod, date: string) => void;
 		onopenpicker: () => void;
 		pickerTriggerEl?: HTMLButtonElement | null;
@@ -80,9 +81,10 @@
 			bind:this={pickerTriggerEl}
 			onclick={onopenpicker}
 			aria-haspopup="dialog"
+			aria-expanded={pickerOpen}
 			class="text-[#e5e5e5] text-sm font-semibold underline underline-offset-4 decoration-[#444] hover:decoration-[#888] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded"
 		>
-			{label} <span aria-hidden="true">▾</span>
+			{label} <span aria-hidden="true">▾</span><span class="sr-only">(open date picker)</span>
 		</button>
 		<button
 			onclick={() => step(1)}

@@ -46,7 +46,7 @@
 <h1 class="text-2xl font-bold text-[#e5e5e5] mb-4">Statistics</h1>
 
 <div class="mb-6 relative">
-	<PeriodTabs {period} {date} onchange={updateParams} onopenpicker={() => (pickerOpen = !pickerOpen)} bind:pickerTriggerEl />
+	<PeriodTabs {period} {date} {pickerOpen} onchange={updateParams} onopenpicker={() => (pickerOpen = !pickerOpen)} bind:pickerTriggerEl />
 	{#if pickerOpen && period !== 'all-time'}
 		<PeriodPicker
 			period={period}

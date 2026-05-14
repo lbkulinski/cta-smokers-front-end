@@ -126,8 +126,8 @@
 		<div class="px-4 pt-4 pb-2">
 			<div class="flex items-start gap-2" aria-hidden="true">
 				<div class="flex flex-col justify-between text-right shrink-0" style="width: 20px; height: 96px;">
-					<span class="text-[#555] text-[9px]">{maxCount}</span>
-					<span class="text-[#555] text-[9px]">0</span>
+					<span class="text-[#888] text-[9px]">{maxCount}</span>
+					<span class="text-[#888] text-[9px]">0</span>
 				</div>
 				<div class="flex-1 flex items-end gap-1" style="height: 96px;">
 					{#each bars as bar}
@@ -135,7 +135,6 @@
 						<div
 							class="flex-1 min-w-0 rounded-t transition-[height] duration-300"
 							style="height: {h}px; background-color: {color}; opacity: 0.85;"
-							title={String(bar.count)}
 						></div>
 					{/each}
 				</div>
@@ -144,7 +143,7 @@
 				{#each bars as bar, i}
 					<div class="flex-1 min-w-0 text-center overflow-hidden">
 						{#if shouldShowLabel(i)}
-							<span class="text-[#555] text-[9px] truncate block">{bar.label}</span>
+							<span class="text-[#888] text-[9px] truncate block">{bar.label}</span>
 						{/if}
 					</div>
 				{/each}

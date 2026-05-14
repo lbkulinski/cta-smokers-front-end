@@ -112,7 +112,7 @@
 		<div class="px-4 py-3 border-b border-[#2a2a2a] flex items-center justify-between">
 			<span class="text-[#888] text-xs uppercase tracking-wider font-semibold">Leaderboard</span>
 			{#if partialError}
-				<span class="text-xs text-[#f87171]">Some lines could not be loaded</span>
+				<span role="alert" class="text-xs text-[#f87171]">Some lines could not be loaded</span>
 			{/if}
 		</div>
 
@@ -131,7 +131,7 @@
 					aria-label="{LINE_DISPLAY_NAMES[line]}, {count} report{count !== 1 ? 's' : ''}{period !== 'day' ? (isSelected ? ', hide trend chart' : ', show trend chart') : ''}"
 					class="group w-full flex items-center gap-3 px-4 py-3 transition-colors text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-[-2px] {isSelected ? 'bg-[#1f1f1f]' : 'hover:bg-[#1a1a1a]'}"
 				>
-					<span class="text-[#555] text-xs w-4 flex-shrink-0 text-right">{i + 1}</span>
+					<span class="text-[#888] text-xs w-4 flex-shrink-0 text-right">{i + 1}</span>
 					<span
 						class="text-xs font-bold w-14 text-center py-0.5 rounded-full flex-shrink-0"
 						style="background-color: {color}; color: {textColor};"
