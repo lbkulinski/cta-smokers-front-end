@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { AggregatePeriod } from '$lib/types';
-	import { isoWeeksInYear, getISOWeekString, getChicagoParts, formatWeekRange } from '$lib/date-utils';
+	import { isoWeeksInYear, getISOWeekString, getChicagoParts, formatWeekRange, APP_MIN_DATE, APP_MIN_WEEK, APP_LAUNCH_YEAR } from '$lib/date-utils';
 
 	let { period, date, onselect, onclose }: {
 		period: Exclude<AggregatePeriod, 'all-time'>;
@@ -11,8 +11,8 @@
 
 	const { year: nowYear, month: nowMonth, day: nowDay } = getChicagoParts();
 	const todayStr = `${nowYear}-${String(nowMonth).padStart(2, '0')}-${String(nowDay).padStart(2, '0')}`;
-	const MIN_DATE = '2026-02-28';
-	const MIN_WEEK = getISOWeekString(2026, 2, 28);
+	const MIN_DATE = APP_MIN_DATE;
+	const MIN_WEEK = APP_MIN_WEEK;
 	const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 	const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -36,7 +36,7 @@
 	function isMonthDisabled(month: number): boolean {
 		return pickerYear > nowYear ||
 			(pickerYear === nowYear && month > nowMonth) ||
-			(pickerYear === 2026 && month < 2);
+			(pickerYear === APP_LAUNCH_YEAR && month < 2);
 	}
 
 	function isMonthSelected(month: number): boolean {
@@ -47,7 +47,7 @@
 	// Year picker helpers
 	function getYearList(): number[] {
 		const years: number[] = [];
-		for (let y = nowYear; y >= 2026; y--) years.push(y);
+		for (let y = nowYear; y >= APP_LAUNCH_YEAR; y--) years.push(y);
 		return years;
 	}
 
@@ -58,7 +58,7 @@
 		const weeks: string[] = [];
 		for (let w = total; w >= 1; w--) {
 			const weekStr = `${pickerYear}-W${String(w).padStart(2, '0')}`;
-			if (pickerYear === 2026 && weekStr < MIN_WEEK) break;
+			if (pickerYear === APP_LAUNCH_YEAR && weekStr < MIN_WEEK) break;
 			if (pickerYear < nowYear || weekStr <= currentWeek) weeks.push(weekStr);
 		}
 		return weeks;
@@ -98,7 +98,7 @@
 		(pickerYear === nowYear && pickerMonth >= nowMonth)
 	);
 
-	let dayNavPrevDisabled = $derived(pickerYear < 2026 || (pickerYear === 2026 && pickerMonth <= 2));
+	let dayNavPrevDisabled = $derived(pickerYear < APP_LAUNCH_YEAR || (pickerYear === APP_LAUNCH_YEAR && pickerMonth <= 2));
 
 	let popoverEl = $state<HTMLDivElement | null>(null);
 
@@ -124,7 +124,7 @@
 
 	{#if period === 'month'}
 		<div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
-			<button onclick={() => pickerYear--} disabled={pickerYear <= 2026} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
+			<button onclick={() => pickerYear--} disabled={pickerYear <= APP_LAUNCH_YEAR} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
 			<span class="text-[#e5e5e5] text-sm font-semibold">{pickerYear}</span>
 			<button onclick={() => pickerYear++} disabled={pickerYear >= nowYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
 		</div>
@@ -157,7 +157,7 @@
 
 	{:else if period === 'week'}
 		<div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
-			<button onclick={() => pickerYear--} disabled={pickerYear <= 2026} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
+			<button onclick={() => pickerYear--} disabled={pickerYear <= APP_LAUNCH_YEAR} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
 			<span class="text-[#e5e5e5] text-sm font-semibold">{pickerYear}</span>
 			<button onclick={() => pickerYear++} disabled={pickerYear >= nowYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
 		</div>

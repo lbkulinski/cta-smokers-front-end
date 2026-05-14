@@ -1,5 +1,5 @@
 import { Line } from './types';
-import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest, SmokingReportAggregateResponse, AggregatePeriod } from './types';
+import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest, SmokingReportAggregateResponse, SmokingReportDailyCountsResponse, AggregatePeriod } from './types';
 
 const SMOKERS_BASE_URL = import.meta.env.VITE_SMOKERS_API_BASE_URL ?? 'https://api.ctasmokers.com';
 
@@ -7,7 +7,7 @@ export class RateLimitError extends Error {}
 
 function checkResponse(res: Response, context: string): void {
 	if (res.status === 429) {
-		throw new RateLimitError('Too many requests. Please wait before submitting again.');
+		throw new RateLimitError('Too many requests. Please wait and try again.');
 	}
 	if (!res.ok) {
 		throw new Error(`${context}: ${res.status} ${res.statusText}`);
@@ -40,6 +40,17 @@ export async function submitReport(req: SubmitReportRequest): Promise<SmokingRep
 		body: JSON.stringify(req)
 	});
 	checkResponse(res, 'Failed to submit report');
+	return res.json();
+}
+
+export async function fetchDailyCounts(
+	line: Line,
+	yearMonth: string
+): Promise<SmokingReportDailyCountsResponse> {
+	const url = `${SMOKERS_BASE_URL}/api/cta/reports/smoking/aggregates/${line}/month/${yearMonth}/days`;
+	const res = await fetch(url);
+	if (res.status === 404) return { days: [] };
+	checkResponse(res, 'Failed to fetch daily counts');
 	return res.json();
 }
 

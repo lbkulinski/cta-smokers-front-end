@@ -1,7 +1,7 @@
 import type { AggregatePeriod } from './types';
 
-const APP_LAUNCH_YEAR = 2026;
-const APP_MIN_DATE = '2026-02-28';
+export const APP_LAUNCH_YEAR = 2026;
+export const APP_MIN_DATE = '2026-02-28';
 
 export function getChicagoParts(): { year: number; month: number; day: number } {
 	const s = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
@@ -17,6 +17,8 @@ export function getISOWeekString(year: number, month: number, day: number): stri
 	const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
 	return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
 }
+
+export const APP_MIN_WEEK = getISOWeekString(2026, 2, 28);
 
 export function isoWeeksInYear(year: number): number {
 	const jan1 = new Date(year, 0, 1).getDay();
@@ -63,7 +65,7 @@ export function isAtCurrentPeriod(period: AggregatePeriod, date: string): boolea
 export function isAtMinPeriod(period: AggregatePeriod, date: string): boolean {
 	if (period === 'all-time') return true;
 	if (period === 'day') return date <= APP_MIN_DATE;
-	if (period === 'week') return date <= getISOWeekString(2026, 2, 28);
+	if (period === 'week') return date <= APP_MIN_WEEK;
 	if (period === 'month') return date <= '2026-02';
 	if (period === 'year') return parseInt(date) <= APP_LAUNCH_YEAR;
 	return false;

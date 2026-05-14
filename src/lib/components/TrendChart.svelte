@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { Line } from '$lib/types';
 	import type { AggregatePeriod } from '$lib/types';
-	import { fetchAggregate, RateLimitError } from '$lib/api';
+	import { fetchAggregate, fetchDailyCounts, RateLimitError } from '$lib/api';
 	import { LINE_COLORS, LINE_DISPLAY_NAMES, LINE_TEXT_COLORS } from '$lib/constants';
-	import { getTrendSubPeriods, formatTrendLabel } from '$lib/date-utils';
+	import { getTrendSubPeriods, formatTrendLabel, getChicagoParts } from '$lib/date-utils';
 
 	let { line, period, date }: {
 		line: Line;
@@ -23,13 +23,31 @@
 		loading = true;
 		error = null;
 
-		const subPeriods = getTrendSubPeriods(period, date);
-		if (subPeriods.length === 0) {
-			if (id === loadId) { bars = []; loading = false; }
-			return;
-		}
-
 		try {
+			if (period === 'month') {
+				const { days } = await fetchDailyCounts(line, date);
+				if (id !== loadId) return;
+				const countByDate = new Map(days.map(d => [d.date, d.reportCount]));
+				const [year, month] = date.split('-').map(Number);
+				const daysInMonth = new Date(year, month, 0).getDate();
+				const { year: cy, month: cm, day: cd } = getChicagoParts();
+				const todayStr = `${cy}-${String(cm).padStart(2, '0')}-${String(cd).padStart(2, '0')}`;
+				const result: Bar[] = [];
+				for (let d = 1; d <= daysInMonth; d++) {
+					const dayStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+					if (dayStr > todayStr) break;
+					result.push({ label: String(d), count: countByDate.get(dayStr) ?? 0 });
+				}
+				bars = result;
+				return;
+			}
+
+			const subPeriods = getTrendSubPeriods(period, date);
+			if (subPeriods.length === 0) {
+				bars = [];
+				return;
+			}
+
 			const fetched = await Promise.all(
 				subPeriods.map(({ subPeriod, value }) =>
 					fetchAggregate(line, subPeriod, value).then(res => ({
