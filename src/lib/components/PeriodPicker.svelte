@@ -105,6 +105,21 @@
 	$effect(() => {
 		if (popoverEl) popoverEl.focus();
 	});
+
+	function trapFocus(e: KeyboardEvent): void {
+		if (e.key !== 'Tab') return;
+		const focusable = Array.from(
+			popoverEl?.querySelectorAll<HTMLElement>('button:not([disabled])') ?? []
+		);
+		if (focusable.length === 0) return;
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+		if (e.shiftKey) {
+			if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+		} else {
+			if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+		}
+	}
 </script>
 
 <svelte:window onkeydown={(e) => { if (e.key === 'Escape') { e.preventDefault(); onclose(); } }} />
@@ -119,6 +134,7 @@
 	role="dialog"
 	aria-modal="true"
 	aria-label="Select {period}"
+	onkeydown={trapFocus}
 	class="absolute top-full left-0 mt-2 z-20 bg-[#1a1a1a] border border-[#333] rounded-xl shadow-2xl overflow-hidden min-w-[220px] focus:outline-none"
 >
 

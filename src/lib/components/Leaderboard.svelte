@@ -128,6 +128,7 @@
 				<button
 					onclick={() => onselect(isSelected ? null : line)}
 					aria-pressed={isSelected}
+					aria-label="{LINE_DISPLAY_NAMES[line]}, {count} report{count !== 1 ? 's' : ''}{period !== 'day' ? (isSelected ? ', hide trend chart' : ', show trend chart') : ''}"
 					class="group w-full flex items-center gap-3 px-4 py-3 transition-colors text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-[-2px] {isSelected ? 'bg-[#1f1f1f]' : 'hover:bg-[#1a1a1a]'}"
 				>
 					<span class="text-[#555] text-xs w-4 flex-shrink-0 text-right">{i + 1}</span>

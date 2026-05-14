@@ -3,7 +3,7 @@
 	import type { AggregatePeriod } from '$lib/types';
 	import { fetchAggregate, fetchDailyCounts, RateLimitError } from '$lib/api';
 	import { LINE_COLORS, LINE_DISPLAY_NAMES, LINE_TEXT_COLORS } from '$lib/constants';
-	import { getTrendSubPeriods, formatTrendLabel, getChicagoParts } from '$lib/date-utils';
+	import { getTrendSubPeriods, formatTrendLabel, getChicagoParts, formatPeriodLabel } from '$lib/date-utils';
 
 	let { line, period, date }: {
 		line: Line;
@@ -150,7 +150,13 @@
 				{/each}
 			</div>
 			<table class="sr-only">
-				<caption>{lineName} trend</caption>
+				<caption>{lineName} trend — {formatPeriodLabel(period, date)}</caption>
+				<thead>
+					<tr>
+						<th scope="col">Period</th>
+						<th scope="col">Reports</th>
+					</tr>
+				</thead>
 				<tbody>
 					{#each bars as bar}
 						<tr>

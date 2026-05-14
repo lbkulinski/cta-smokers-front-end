@@ -31,12 +31,33 @@
 	function step(delta: number): void {
 		onchange(period, stepPeriod(period, date, delta));
 	}
+
+	let tabEls: (HTMLButtonElement | null)[] = [];
+
+	function handleTabsKeydown(e: KeyboardEvent): void {
+		const idx = TABS.findIndex(t => t.value === period);
+		let next = -1;
+		if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+			e.preventDefault();
+			next = (idx + 1) % TABS.length;
+		} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+			e.preventDefault();
+			next = (idx - 1 + TABS.length) % TABS.length;
+		}
+		if (next !== -1) {
+			selectTab(TABS[next].value);
+			tabEls[next]?.focus();
+		}
+	}
 </script>
 
-<div class="flex gap-2 flex-wrap mb-3" role="group" aria-label="Time period">
-	{#each TABS as tab}
+<div class="flex gap-2 flex-wrap mb-3" role="radiogroup" aria-label="Time period" onkeydown={handleTabsKeydown}>
+	{#each TABS as tab, i}
 		<button
-			aria-pressed={period === tab.value}
+			bind:this={tabEls[i]}
+			role="radio"
+			aria-checked={period === tab.value}
+			tabindex={period === tab.value ? 0 : -1}
 			onclick={() => selectTab(tab.value)}
 			class="px-3 py-1.5 rounded-full text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white {period === tab.value ? 'bg-[#c60c30] text-white' : 'bg-[#1f1f1f] text-[#888] hover:text-[#e5e5e5] border border-[#2a2a2a]'}"
 		>
