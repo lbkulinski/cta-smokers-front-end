@@ -63,11 +63,6 @@
 
 		if (failCount > 0) partialError = true;
 
-		const succeededLines = new Set(succeeded.map(r => r.line));
-		for (const line of LINE_ORDER) {
-			if (!succeededLines.has(line)) succeeded.push({ line, count: 0 });
-		}
-
 		results = succeeded.filter(r => r.count > 0).sort((a, b) => b.count - a.count);
 		loading = false;
 	}

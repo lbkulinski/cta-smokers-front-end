@@ -82,7 +82,7 @@
 	}
 </script>
 
-<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl overflow-hidden mt-4">
+<div class="relative bg-[#171717] border border-[#2a2a2a] rounded-xl overflow-hidden mt-4">
 	<div class="px-4 py-3 border-b border-[#2a2a2a] flex items-center gap-2">
 		<span
 			class="text-xs font-bold px-2 py-0.5 rounded-full"
