@@ -39,3 +39,17 @@ export interface SubmitReportRequest {
 	runNumber?: string;
 }
 
+export type AggregatePeriod = 'all-time' | 'year' | 'month' | 'week' | 'day';
+
+export interface SmokingReportAggregateResponse {
+	reportCount: number;
+}
+
+export interface SmokingReportDailyCount {
+	date: string;
+	reportCount: number;
+}
+
+export interface SmokingReportDailyCountsResponse {
+	days: SmokingReportDailyCount[];
+}
