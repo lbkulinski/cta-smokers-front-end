@@ -63,7 +63,10 @@ For all tabs except All Time, a row below the tabs shows `‹ [period label] ›
 
 Fires 8 parallel `fetchAggregate` calls (one per line) when period/date changes.
 
-- All 8 lines always shown; 0-count lines sorted to bottom and dimmed
+- Lines with 0 reports or that failed to load are excluded from the list
+- If all 8 fetches fail: shows a full error card with a retry button
+- If all succeeded lines have 0 reports: shows "No reports for this period." empty state
+- If some (but not all) fetches fail: shows a "Some lines could not be loaded" banner; successful non-zero lines are displayed normally
 - Sort: `reportCount` descending
 - Row layout: rank | colored line pill | horizontal bar | count
 - Bar width: `(count / maxCount) * 100%` using line color
