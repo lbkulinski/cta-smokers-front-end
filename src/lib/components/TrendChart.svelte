@@ -141,9 +141,9 @@
 			</div>
 			<div class="flex gap-1 mt-1.5 pl-7" aria-hidden="true">
 				{#each bars as bar, i}
-					<div class="flex-1 min-w-0 text-center overflow-hidden">
+					<div class="flex-1 min-w-0 text-center">
 						{#if shouldShowLabel(i)}
-							<span class="text-[#888] text-[9px] truncate block">{bar.label}</span>
+							<span class="text-[#888] text-[9px] whitespace-nowrap block">{bar.label}</span>
 						{/if}
 					</div>
 				{/each}
