@@ -78,7 +78,12 @@
 	let lineName = $derived(LINE_DISPLAY_NAMES[line].replace(' Line', ''));
 	function shouldShowLabel(i: number): boolean {
 		if (bars.length <= 12) return true;
-		return i === 0 || (i + 1) % 5 === 0 || i === bars.length - 1;
+		if (i === 0 || (i + 1) % 5 === 0) return true;
+		if (i === bars.length - 1) {
+			const prevMultipleOf5 = Math.floor((i + 1) / 5) * 5 - 1;
+			return (i - prevMultipleOf5) >= 3;
+		}
+		return false;
 	}
 </script>
 
