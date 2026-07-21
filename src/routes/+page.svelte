@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { browser } from '$app/environment';
 	import { afterNavigate } from '$app/navigation';
 	import { fetchReportsForDate } from '$lib/api';
 	import type { SmokingReportResponse } from '$lib/types';
@@ -208,8 +209,10 @@
 	onDestroy(() => {
 		clearInterval(interval);
 		if (debounceTimer) clearTimeout(debounceTimer);
-		document.removeEventListener('visibilitychange', onVisible);
-		window.removeEventListener('focus', onVisible);
+		if (browser) {
+			document.removeEventListener('visibilitychange', onVisible);
+			window.removeEventListener('focus', onVisible);
+		}
 	});
 
 	let availableLines = $derived(LINE_ORDER.filter((l) => reports.some((r) => r.line === l)));
@@ -226,6 +229,10 @@
 	<meta property="og:description" content="See active smoking reports on CTA trains in real time. Help keep Chicago Transit Authority rail lines smoke-free." />
 	<meta property="og:url" content="https://ctasmokers.com/" />
 	<meta property="og:type" content="website" />
+	<meta property="og:image" content="https://ctasmokers.com/og-image.png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:image" content="https://ctasmokers.com/og-image.png" />
 </svelte:head>
 
 <div class="flex items-center justify-between mb-4">
