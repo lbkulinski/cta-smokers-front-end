@@ -108,6 +108,11 @@
 	<meta property="og:description" content="Report a smoker on any CTA L line and help keep Chicago's trains smoke-free." />
 	<meta property="og:url" content="https://ctasmokers.com/report" />
 	<meta property="og:type" content="website" />
+	<meta property="og:image" content="https://ctasmokers.com/og-image.png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:image" content="https://ctasmokers.com/og-image.png" />
 </svelte:head>
 
 <div class="max-w-lg mx-auto">
