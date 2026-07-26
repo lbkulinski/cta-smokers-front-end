@@ -1,0 +1,12 @@
+{
+  "short_name": "CTA Smokers",
+  "name": "CTA Smokers",
+  "icons": [
+    { "src": "/favicon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/favicon-512.png", "type": "image/png", "sizes": "512x512" }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0d0d0d",
+  "background_color": "#0d0d0d"
+}
