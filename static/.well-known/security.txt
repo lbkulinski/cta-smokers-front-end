@@ -1,0 +1,4 @@
+Contact: mailto:admin@ctasmokers.com
+Expires: 2027-07-27T00:00:00.000Z
+Canonical: https://ctasmokers.com/.well-known/security.txt
+Preferred-Languages: en
