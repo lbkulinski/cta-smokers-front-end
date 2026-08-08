@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { submitReport, RateLimitError } from '$lib/api';
+	import { submitReport, RateLimitError, DuplicateReportError } from '$lib/api';
 	import { Line } from '$lib/types';
 	import type { SubmitReportRequest } from '$lib/types';
 	import { LINE_DISPLAY_NAMES } from '$lib/constants';
@@ -92,7 +92,9 @@
 			runNumber = '';
 			focusAfterUpdate(() => successEl);
 		} catch (e_) {
-			error = e_ instanceof RateLimitError ? e_.message : 'Unable to submit report. Please try again.';
+			error = e_ instanceof RateLimitError || e_ instanceof DuplicateReportError
+				? e_.message
+				: 'Unable to submit report. Please try again.';
 			focusAfterUpdate(() => errorEl);
 		} finally {
 			submitting = false;
