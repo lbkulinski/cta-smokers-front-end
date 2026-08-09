@@ -10,9 +10,6 @@ function checkResponse(res: Response, context: string): void {
 	if (res.status === 429) {
 		throw new RateLimitError('Too many requests. Please wait and try again.');
 	}
-	if (res.status === 409) {
-		throw new DuplicateReportError('This car has already been reported and is still active.');
-	}
 	if (!res.ok) {
 		throw new Error(`${context}: ${res.status} ${res.statusText}`);
 	}
@@ -43,6 +40,9 @@ export async function submitReport(req: SubmitReportRequest): Promise<SmokingRep
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(req)
 	});
+	if (res.status === 409) {
+		throw new DuplicateReportError('This car has already been reported and is still active.');
+	}
 	checkResponse(res, 'Failed to submit report');
 	return res.json();
 }
