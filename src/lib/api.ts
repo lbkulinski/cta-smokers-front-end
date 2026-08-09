@@ -4,6 +4,7 @@ import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest
 const SMOKERS_BASE_URL = import.meta.env.VITE_SMOKERS_API_BASE_URL ?? 'https://api.ctasmokers.com';
 
 export class RateLimitError extends Error {}
+export class DuplicateReportError extends Error {}
 
 function checkResponse(res: Response, context: string): void {
 	if (res.status === 429) {
@@ -39,6 +40,9 @@ export async function submitReport(req: SubmitReportRequest): Promise<SmokingRep
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(req)
 	});
+	if (res.status === 409) {
+		throw new DuplicateReportError('This car has already been reported and is still active.');
+	}
 	checkResponse(res, 'Failed to submit report');
 	return res.json();
 }
