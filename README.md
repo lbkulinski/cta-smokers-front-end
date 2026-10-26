@@ -4,7 +4,7 @@ A web app for reporting and tracking smoking incidents on Chicago Transit Author
 
 ## Features
 
-- **Live feed** — top 25 smoking reports for today, grouped by line and destination, with 30-second auto-refresh
+- **Live feed** — active smoking reports, newest first, grouped by line and destination, with 30-second auto-refresh
 - **Submit reports** — report a smoking incident with line, destination, next stop, car number, and optional run number
 - **All 8 CTA lines** — Red, Blue, Brown, Green, Orange, Purple, Pink, and Yellow
 
@@ -75,7 +75,7 @@ src/
 │   ├── +layout.ts             Root layout config (prerender=false)
 │   ├── +layout.svelte         Navigation bar + shared layout
 │   ├── +page.ts               Home page config (ssr=false)
-│   ├── +page.svelte           Home page — today's top 25 reports
+│   ├── +page.svelte           Home page — active reports
 │   └── report/
 │       ├── +page.ts           Report page config (ssr=true, prerender=true)
 │       └── +page.svelte       Report submission form
@@ -92,6 +92,5 @@ The app consumes the CTA Smokers API (`https://api.ctasmokers.com`):
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/cta/reports/smoking/{date}` | Fetch reports for a date (paginated) |
-| `GET` | `/api/cta/reports/smoking/{date}/{reportId}` | Fetch a single report |
+| `GET` | `/api/cta/reports/smoking/active` | Fetch active reports, newest first (cursor-paginated) |
 | `POST` | `/api/cta/reports/smoking` | Submit a new report |
