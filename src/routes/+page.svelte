@@ -2,19 +2,11 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { afterNavigate } from '$app/navigation';
-	import { fetchReportsForDate } from '$lib/api';
+	import { fetchActiveReports } from '$lib/api';
 	import type { SmokingReportResponse } from '$lib/types';
 	import { Line } from '$lib/types';
 	import { LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES } from '$lib/constants';
 	import { getStationName } from '$lib/stations';
-
-	type CarGroup = {
-		carNumber: string;
-		runNumber?: string;
-		nextStationId: string;
-		count: number;
-		latestAt: string;
-	};
 
 	const LINE_ORDER = [Line.RED, Line.BLUE, Line.BROWN, Line.GREEN, Line.ORANGE, Line.PURPLE, Line.PINK, Line.YELLOW];
 
@@ -24,9 +16,8 @@
 	let loadingMore = $state(false);
 	let error: string | null = $state(null);
 	let lastUpdated: Date | null = $state(null);
-	let todayCursor = $state<string | undefined>(undefined);
-	let yesterdayCursor = $state<string | undefined>(undefined);
-	let hasMore = $derived(!!todayCursor || !!yesterdayCursor);
+	let nextCursor = $state<string | undefined>(undefined);
+	let hasMore = $derived(!!nextCursor);
 	let selectedLine = $state<Line | null>(null);
 	let interval: ReturnType<typeof setInterval>;
 
@@ -34,50 +25,25 @@
 		selectedLine = selectedLine === line ? null : line;
 	}
 
-	function chicagoDateString(d: Date): string {
-		return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(d);
-	}
-
-	function dates() {
-		const now = new Date();
-		const today = chicagoDateString(now);
-		const yesterdayDate = new Date(now.getTime() - 86_400_000);
-		const yesterday = chicagoDateString(yesterdayDate);
-		return { now, today, yesterday };
+	function reportKey(r: SmokingReportResponse): string {
+		return `${r.carNumber}:${r.line}`;
 	}
 
 	function mergeReports(existing: SmokingReportResponse[], incoming: SmokingReportResponse[], now: Date): SmokingReportResponse[] {
-		const seen = new Set(existing.map((r) => r.reportId));
-		const merged = [...existing, ...incoming.filter((r) => !seen.has(r.reportId))];
-		return merged
+		const byKey = new Map(existing.map((r) => [reportKey(r), r]));
+		for (const r of incoming) byKey.set(reportKey(r), r);
+		return [...byKey.values()]
 			.filter((r) => new Date(r.expiresAt) > now)
 			.sort((a, b) => new Date(b.reportedAt).getTime() - new Date(a.reportedAt).getTime());
 	}
 
-	function groupReports(data: SmokingReportResponse[]): Map<Line, Map<string, CarGroup[]>> {
-		const grouped = new Map<Line, Map<string, CarGroup[]>>();
+	function groupReports(data: SmokingReportResponse[]): Map<Line, Map<string, SmokingReportResponse[]>> {
+		const grouped = new Map<Line, Map<string, SmokingReportResponse[]>>();
 		for (const report of data) {
 			if (!grouped.has(report.line)) grouped.set(report.line, new Map());
 			const lineGroup = grouped.get(report.line)!;
 			if (!lineGroup.has(report.destinationId)) lineGroup.set(report.destinationId, []);
-			const carGroups = lineGroup.get(report.destinationId)!;
-			const existing = carGroups.find((g) => g.carNumber === report.carNumber);
-			if (existing) {
-				existing.count++;
-				if (new Date(report.reportedAt) > new Date(existing.latestAt)) {
-					existing.latestAt = report.reportedAt;
-					existing.nextStationId = report.nextStationId;
-					if (report.runNumber) existing.runNumber = report.runNumber;
-				}
-			} else {
-				carGroups.push({
-					carNumber: report.carNumber,
-					runNumber: report.runNumber,
-					nextStationId: report.nextStationId,
-					count: 1,
-					latestAt: report.reportedAt
-				});
-			}
+			lineGroup.get(report.destinationId)!.push(report);
 		}
 		return grouped;
 	}
@@ -93,38 +59,15 @@
 		return date.toLocaleTimeString('en-US', { hour12: false });
 	}
 
-	async function fetchFirstPages() {
-		const { now, today, yesterday } = dates();
-		const chicagoParts = new Intl.DateTimeFormat('en-US', {
-			timeZone: 'America/Chicago',
-			hour: 'numeric',
-			minute: 'numeric',
-			hour12: false
-		}).formatToParts(now);
-		const chicagoHour = parseInt(chicagoParts.find((p) => p.type === 'hour')?.value ?? '0');
-		const chicagoMinute = parseInt(chicagoParts.find((p) => p.type === 'minute')?.value ?? '0');
-		const needsYesterday = chicagoHour === 0 && chicagoMinute < 30;
-		const [todayResult, yesterdayResult] = await Promise.allSettled([
-			fetchReportsForDate(today),
-			needsYesterday ? fetchReportsForDate(yesterday) : Promise.resolve(null)
-		]);
-		return { now, today, yesterday, needsYesterday, todayResult, yesterdayResult };
-	}
-
 	async function load() {
 		loading = true;
 		error = null;
 		try {
-			const { now, todayResult, yesterdayResult } = await fetchFirstPages();
-			todayCursor = todayResult.status === 'fulfilled' ? (todayResult.value?.nextCursor ?? undefined) : undefined;
-			yesterdayCursor = yesterdayResult.status === 'fulfilled' ? (yesterdayResult.value?.nextCursor ?? undefined) : undefined;
-			const incoming = [
-				...(todayResult.status === 'fulfilled' ? todayResult.value?.reports ?? [] : []),
-				...(yesterdayResult.status === 'fulfilled' ? yesterdayResult.value?.reports ?? [] : [])
-			];
-			reports = mergeReports([], incoming, now);
+			const now = new Date();
+			const page = await fetchActiveReports();
+			nextCursor = page.nextCursor ?? undefined;
+			reports = mergeReports([], page.reports, now);
 			lastUpdated = now;
-			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load reports';
 		} finally {
@@ -135,54 +78,31 @@
 	async function refresh() {
 		refreshing = true;
 		try {
-			const { now, today, yesterday, needsYesterday, todayResult, yesterdayResult } = await fetchFirstPages();
-			if (!todayCursor && todayResult.status === 'fulfilled') {
-				todayCursor = todayResult.value?.nextCursor ?? undefined;
+			const now = new Date();
+			const page = await fetchActiveReports();
+			if (!page.nextCursor) {
+				// A first page without a cursor is the complete active set, so drop anything the API no longer returns.
+				nextCursor = undefined;
+				reports = mergeReports([], page.reports, now);
+			} else {
+				if (!nextCursor) nextCursor = page.nextCursor;
+				reports = mergeReports(reports, page.reports, now);
 			}
-			if (!yesterdayCursor && yesterdayResult.status === 'fulfilled') {
-				yesterdayCursor = yesterdayResult.value?.nextCursor ?? undefined;
-			}
-			const incoming = [
-				...(todayResult.status === 'fulfilled' ? todayResult.value?.reports ?? [] : []),
-				...(yesterdayResult.status === 'fulfilled' ? yesterdayResult.value?.reports ?? [] : [])
-			];
-			// Dates where page 1 has no cursor are the complete dataset for that date.
-			// Remove any client-side reports for those dates that the API no longer returns.
-			const returnedIds = new Set(incoming.map((r) => r.reportId));
-			const completeDates = new Set<string>();
-			if (todayResult.status === 'fulfilled' && !todayResult.value?.nextCursor) {
-				completeDates.add(today);
-			}
-			if (needsYesterday && yesterdayResult.status === 'fulfilled' && !yesterdayResult.value?.nextCursor) {
-				completeDates.add(yesterday);
-			}
-			const base = reports.filter((r) => !completeDates.has(r.date) || returnedIds.has(r.reportId));
-			reports = mergeReports(base, incoming, now);
 			lastUpdated = now;
+		} catch {
+			// Keep showing the existing reports; the next refresh will retry.
 		} finally {
 			refreshing = false;
 		}
 	}
 
 	async function loadMore() {
+		if (!nextCursor) return;
 		loadingMore = true;
 		try {
-			const { now, today, yesterday } = dates();
-			const [todayResult, yesterdayResult] = await Promise.allSettled([
-				todayCursor ? fetchReportsForDate(today, todayCursor) : Promise.resolve(null),
-				yesterdayCursor ? fetchReportsForDate(yesterday, yesterdayCursor) : Promise.resolve(null)
-			]);
-			if (todayResult.status === 'fulfilled' && todayResult.value) {
-				todayCursor = todayResult.value.nextCursor ?? undefined;
-			}
-			if (yesterdayResult.status === 'fulfilled' && yesterdayResult.value) {
-				yesterdayCursor = yesterdayResult.value.nextCursor ?? undefined;
-			}
-			const incoming = [
-				...(todayResult.status === 'fulfilled' && todayResult.value ? todayResult.value.reports : []),
-				...(yesterdayResult.status === 'fulfilled' && yesterdayResult.value ? yesterdayResult.value.reports : [])
-			];
-			reports = mergeReports(reports, incoming, now);
+			const page = await fetchActiveReports(nextCursor);
+			nextCursor = page.nextCursor ?? undefined;
+			reports = mergeReports(reports, page.reports, new Date());
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load more reports';
 		} finally {
@@ -300,14 +220,14 @@
 				{@const lineMap = grouped.get(line)!}
 				{@const bg = LINE_COLORS[line]}
 				{@const fg = LINE_TEXT_COLORS[line]}
-				{@const total = [...lineMap.values()].flatMap((v) => v).reduce((s, g) => s + g.count, 0)}
+				{@const total = [...lineMap.values()].reduce((s, g) => s + g.length, 0)}
 				<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl overflow-hidden">
 					<div class="px-4 py-3 flex items-center gap-3" style="background-color: {bg}; color: {fg};">
 						<span class="font-bold text-lg">{LINE_DISPLAY_NAMES[line]}</span>
 						<span class="text-sm opacity-80">({total} report{total !== 1 ? 's' : ''})</span>
 					</div>
 					<div class="divide-y divide-[#2a2a2a]">
-						{#each [...lineMap.entries()] as [destinationId, carGroups]}
+						{#each [...lineMap.entries()] as [destinationId, destReports]}
 							<div class="px-4 py-3">
 								<h3 class="text-xs font-semibold text-[#888] uppercase tracking-wider mb-2.5">
 									<span aria-hidden="true">→</span>
@@ -315,27 +235,19 @@
 									{getStationName(destinationId)}
 								</h3>
 								<div class="space-y-2">
-									{#each carGroups as group}
+									{#each destReports as report (reportKey(report))}
 										<article class="flex items-center gap-3 text-sm bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2.5">
 											<div class="flex-1 min-w-0">
 												<div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-													<span class="font-semibold text-[#e5e5e5]">Car {group.carNumber}</span>
-													{#if group.runNumber}
-														<span class="text-[#888] text-xs">Run {group.runNumber}</span>
+													<span class="font-semibold text-[#e5e5e5]">Car {report.carNumber}</span>
+													{#if report.runNumber}
+														<span class="text-[#888] text-xs">Run {report.runNumber}</span>
 													{/if}
 												</div>
-												<div class="text-[#888] text-xs mt-0.5">Next: {getStationName(group.nextStationId)}</div>
+												<div class="text-[#888] text-xs mt-0.5">Next: {getStationName(report.nextStationId)}</div>
 											</div>
 											<div class="flex-shrink-0 flex flex-col items-end gap-1">
-												{#if group.count > 1}
-													<span
-														class="bg-[#c60c30] text-white text-xs font-bold px-2 py-0.5 rounded-full leading-none"
-														aria-label="{group.count} reports"
-													>
-														{group.count}×
-													</span>
-												{/if}
-												<time datetime={group.latestAt} class="text-xs text-[#888]">{timeAgo(group.latestAt)}</time>
+												<time datetime={report.reportedAt} class="text-xs text-[#888]">{timeAgo(report.reportedAt)}</time>
 											</div>
 										</article>
 									{/each}

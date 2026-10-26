@@ -15,15 +15,13 @@ export interface Station {
 }
 
 export interface SmokingReportResponse {
-	date: string;
-	reportId: string;
 	reportedAt: string;
 	expiresAt: string;
 	line: Line;
 	destinationId: string;
 	nextStationId: string;
 	carNumber: string;
-	runNumber?: string;
+	runNumber: string | null;
 }
 
 export interface SmokingReportsResponse {

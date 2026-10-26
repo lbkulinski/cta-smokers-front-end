@@ -15,22 +15,17 @@ function checkResponse(res: Response, context: string): void {
 	}
 }
 
-export async function fetchReportsForDate(
-	date: string,
-	nextCursor?: string
+export async function fetchActiveReports(
+	nextCursor?: string,
+	limit = 100
 ): Promise<SmokingReportsResponse> {
-	const url = new URL(`${SMOKERS_BASE_URL}/api/cta/reports/smoking/${date}`);
+	const url = new URL(`${SMOKERS_BASE_URL}/api/cta/reports/smoking/active`);
+	url.searchParams.set('limit', String(limit));
 	if (nextCursor) {
 		url.searchParams.set('nextCursor', nextCursor);
 	}
 	const res = await fetch(url.toString());
 	checkResponse(res, 'Failed to fetch reports');
-	return res.json();
-}
-
-export async function fetchReportById(date: string, reportId: string): Promise<SmokingReportResponse> {
-	const res = await fetch(`${SMOKERS_BASE_URL}/api/cta/reports/smoking/${date}/${reportId}`);
-	checkResponse(res, 'Failed to fetch report');
 	return res.json();
 }
 
