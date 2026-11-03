@@ -88,9 +88,11 @@
 				if (!nextCursor) nextCursor = page.nextCursor;
 				reports = mergeReports(reports, page.reports, now);
 			}
+			error = null;
 			lastUpdated = now;
 		} catch {
-			// Keep showing the existing reports; the next refresh will retry.
+			// Keep the cached reports (minus any that have expired); the next refresh will retry.
+			reports = mergeReports(reports, [], new Date());
 		} finally {
 			refreshing = false;
 		}
