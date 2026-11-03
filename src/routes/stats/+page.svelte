@@ -35,10 +35,10 @@
 
 <svelte:head>
 	<title>Stats — CTA Smokers</title>
-	<meta name="description" content="Aggregate smoking report data across all CTA train lines." />
+	<meta name="description" content="Smoking report counts across all CTA train lines." />
 	<link rel="canonical" href="https://ctasmokers.com/stats" />
 	<meta property="og:title" content="Stats — CTA Smokers" />
-	<meta property="og:description" content="Aggregate smoking report data across all CTA train lines." />
+	<meta property="og:description" content="Smoking report counts across all CTA train lines." />
 	<meta property="og:url" content="https://ctasmokers.com/stats" />
 	<meta property="og:type" content="website" />
 </svelte:head>

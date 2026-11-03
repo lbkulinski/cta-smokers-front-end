@@ -94,3 +94,5 @@ The app consumes the CTA Smokers API (`https://api.ctasmokers.com`):
 |---|---|---|
 | `GET` | `/api/cta/reports/smoking/active` | Fetch active reports, newest first (cursor-paginated) |
 | `POST` | `/api/cta/reports/smoking` | Submit a new report |
+| `GET` | `/api/cta/reports/smoking/counts/{line}/{all-time\|year\|month\|week\|day}[/{value}]` | Report count for a line and period |
+| `GET` | `/api/cta/reports/smoking/counts/{line}/month/{yearMonth}/days` | Daily report counts for a month |
