@@ -37,9 +37,9 @@ export interface SubmitReportRequest {
 	runNumber?: string;
 }
 
-export type AggregatePeriod = 'all-time' | 'year' | 'month' | 'week' | 'day';
+export type CountPeriod = 'all-time' | 'year' | 'month' | 'week' | 'day';
 
-export interface SmokingReportAggregateResponse {
+export interface SmokingReportCountResponse {
 	reportCount: number;
 }
 

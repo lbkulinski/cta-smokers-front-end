@@ -1,5 +1,5 @@
 import { Line } from './types';
-import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest, SmokingReportAggregateResponse, SmokingReportDailyCountsResponse, AggregatePeriod } from './types';
+import type { SmokingReportsResponse, SmokingReportResponse, SubmitReportRequest, SmokingReportCountResponse, SmokingReportDailyCountsResponse, CountPeriod } from './types';
 
 const SMOKERS_BASE_URL = import.meta.env.VITE_SMOKERS_API_BASE_URL ?? 'https://api.ctasmokers.com';
 
@@ -52,23 +52,23 @@ export async function fetchDailyCounts(
 	return res.json();
 }
 
-export async function fetchAggregate(
+export async function fetchCount(
 	line: Line,
 	period: 'all-time'
-): Promise<SmokingReportAggregateResponse>;
-export async function fetchAggregate(
+): Promise<SmokingReportCountResponse>;
+export async function fetchCount(
 	line: Line,
-	period: Exclude<AggregatePeriod, 'all-time'>,
+	period: Exclude<CountPeriod, 'all-time'>,
 	value: string
-): Promise<SmokingReportAggregateResponse>;
-export async function fetchAggregate(
+): Promise<SmokingReportCountResponse>;
+export async function fetchCount(
 	line: Line,
-	period: AggregatePeriod,
+	period: CountPeriod,
 	value?: string
-): Promise<SmokingReportAggregateResponse> {
+): Promise<SmokingReportCountResponse> {
 	const base = `${SMOKERS_BASE_URL}/api/cta/reports/smoking/counts/${line}`;
 	const url = period === 'all-time' ? `${base}/all-time` : `${base}/${period}/${value}`;
 	const res = await fetch(url);
-	checkResponse(res, 'Failed to fetch aggregate');
+	checkResponse(res, 'Failed to fetch count');
 	return res.json();
 }
