@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Home page loads reports from the API's cursor-paginated `/active` endpoint instead of per-date endpoints
+- Count and daily-count requests use the API's `/counts` endpoints (formerly `/aggregates`), and the active feed's page cursor is passed as `cursor`
 - Reports are keyed by car number and line, since only one active report can exist per car and line
 - Report confirmation shows the car, line, and expiry time instead of a report ID
 

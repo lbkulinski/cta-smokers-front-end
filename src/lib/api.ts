@@ -22,7 +22,7 @@ export async function fetchActiveReports(
 	const url = new URL(`${SMOKERS_BASE_URL}/api/cta/reports/smoking/active`);
 	url.searchParams.set('limit', String(limit));
 	if (nextCursor) {
-		url.searchParams.set('nextCursor', nextCursor);
+		url.searchParams.set('cursor', nextCursor);
 	}
 	const res = await fetch(url.toString());
 	checkResponse(res, 'Failed to fetch reports');
@@ -46,9 +46,8 @@ export async function fetchDailyCounts(
 	line: Line,
 	yearMonth: string
 ): Promise<SmokingReportDailyCountsResponse> {
-	const url = `${SMOKERS_BASE_URL}/api/cta/reports/smoking/aggregates/${line}/month/${yearMonth}/days`;
+	const url = `${SMOKERS_BASE_URL}/api/cta/reports/smoking/counts/${line}/month/${yearMonth}/days`;
 	const res = await fetch(url);
-	if (res.status === 404) return { days: [] };
 	checkResponse(res, 'Failed to fetch daily counts');
 	return res.json();
 }
@@ -67,10 +66,9 @@ export async function fetchAggregate(
 	period: AggregatePeriod,
 	value?: string
 ): Promise<SmokingReportAggregateResponse> {
-	const base = `${SMOKERS_BASE_URL}/api/cta/reports/smoking/aggregates/${line}`;
+	const base = `${SMOKERS_BASE_URL}/api/cta/reports/smoking/counts/${line}`;
 	const url = period === 'all-time' ? `${base}/all-time` : `${base}/${period}/${value}`;
 	const res = await fetch(url);
-	if (res.status === 404) return { reportCount: 0 };
 	checkResponse(res, 'Failed to fetch aggregate');
 	return res.json();
 }
