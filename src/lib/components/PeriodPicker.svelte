@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { AggregatePeriod } from '$lib/types';
+	import type { CountPeriod } from '$lib/types';
 	import { isoWeeksInYear, getISOWeekString, getChicagoParts, formatWeekRange, APP_MIN_DATE, APP_MIN_WEEK, APP_LAUNCH_YEAR } from '$lib/date-utils';
 
 	let { period, date, onselect, onclose }: {
-		period: Exclude<AggregatePeriod, 'all-time'>;
+		period: Exclude<CountPeriod, 'all-time'>;
 		date: string;
 		onselect: (value: string) => void;
 		onclose: () => void;

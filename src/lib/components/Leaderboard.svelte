@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Line } from '$lib/types';
-	import type { AggregatePeriod } from '$lib/types';
-	import { fetchAggregate, RateLimitError } from '$lib/api';
+	import type { CountPeriod } from '$lib/types';
+	import { fetchCount, RateLimitError } from '$lib/api';
 	import { LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES } from '$lib/constants';
 
 	const LINE_ORDER = [
@@ -10,7 +10,7 @@
 	];
 
 	let { period, date, selectedLine, onselect }: {
-		period: AggregatePeriod;
+		period: CountPeriod;
 		date: string;
 		selectedLine: Line | null;
 		onselect: (line: Line | null) => void;
@@ -33,8 +33,8 @@
 		const settled = await Promise.allSettled(
 			LINE_ORDER.map(async (line) => {
 				const res = period === 'all-time'
-					? await fetchAggregate(line, period)
-					: await fetchAggregate(line, period, date);
+					? await fetchCount(line, period)
+					: await fetchCount(line, period, date);
 				return { line, count: res.reportCount };
 			})
 		);

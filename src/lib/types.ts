@@ -15,15 +15,13 @@ export interface Station {
 }
 
 export interface SmokingReportResponse {
-	date: string;
-	reportId: string;
 	reportedAt: string;
 	expiresAt: string;
 	line: Line;
 	destinationId: string;
 	nextStationId: string;
 	carNumber: string;
-	runNumber?: string;
+	runNumber: string | null;
 }
 
 export interface SmokingReportsResponse {
@@ -39,9 +37,9 @@ export interface SubmitReportRequest {
 	runNumber?: string;
 }
 
-export type AggregatePeriod = 'all-time' | 'year' | 'month' | 'week' | 'day';
+export type CountPeriod = 'all-time' | 'year' | 'month' | 'week' | 'day';
 
-export interface SmokingReportAggregateResponse {
+export interface SmokingReportCountResponse {
 	reportCount: number;
 }
 
