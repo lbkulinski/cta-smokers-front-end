@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-08
+
 ### Changed
 
 - Home page loads reports from the API's cursor-paginated `/active` endpoint instead of per-date endpoints
@@ -47,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Favicon, Apple-touch-icon, Open Graph meta tags, og:image (no-smoking symbol), canonical links, and sitemap for SEO and social previews
 - Accessibility meeting WCAG 2.1 AA standards (contrast ratios, focus management, form field heights)
 
-[Unreleased]: https://github.com/lbkulinski/cta-smokers-front-end/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/lbkulinski/cta-smokers-front-end/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/lbkulinski/cta-smokers-front-end/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/lbkulinski/cta-smokers-front-end/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lbkulinski/cta-smokers-front-end/releases/tag/v1.0.0
