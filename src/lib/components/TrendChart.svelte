@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { Line } from '$lib/types';
-	import type { AggregatePeriod } from '$lib/types';
-	import { fetchAggregate, fetchDailyCounts, RateLimitError } from '$lib/api';
+	import type { CountPeriod } from '$lib/types';
+	import { fetchCount, fetchDailyCounts, RateLimitError } from '$lib/api';
 	import { LINE_COLORS, LINE_DISPLAY_NAMES, LINE_TEXT_COLORS } from '$lib/constants';
 	import { getTrendSubPeriods, formatTrendLabel, getChicagoParts, formatPeriodLabel } from '$lib/date-utils';
 
 	let { line, period, date }: {
 		line: Line;
-		period: AggregatePeriod;
+		period: CountPeriod;
 		date: string;
 	} = $props();
 
@@ -50,7 +50,7 @@
 
 			const fetched = await Promise.all(
 				subPeriods.map(({ subPeriod, value }) =>
-					fetchAggregate(line, subPeriod, value).then(res => ({
+					fetchCount(line, subPeriod, value).then(res => ({
 						label: formatTrendLabel(period, subPeriod, value),
 						count: res.reportCount
 					}))

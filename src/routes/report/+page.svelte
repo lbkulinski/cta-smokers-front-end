@@ -2,7 +2,7 @@
 	import { tick } from 'svelte';
 	import { submitReport, RateLimitError, DuplicateReportError } from '$lib/api';
 	import { Line } from '$lib/types';
-	import type { SubmitReportRequest } from '$lib/types';
+	import type { SmokingReportResponse, SubmitReportRequest } from '$lib/types';
 	import { LINE_DISPLAY_NAMES } from '$lib/constants';
 	import { getDestinations, getStations } from '$lib/stations';
 
@@ -18,7 +18,7 @@
 	let runNumber = $state('');
 
 	let submitting = $state(false);
-	let successId: string | null = $state(null);
+	let submitted: SmokingReportResponse | null = $state(null);
 	let error: string | null = $state(null);
 	let validationError: string | null = $state(null);
 
@@ -72,7 +72,7 @@
 
 		submitting = true;
 		error = null;
-		successId = null;
+		submitted = null;
 
 		const req: SubmitReportRequest = {
 			line: line as Line,
@@ -84,7 +84,7 @@
 
 		try {
 			const res = await submitReport(req);
-			successId = res.reportId;
+			submitted = res;
 			line = '';
 			destinationId = '';
 			nextStationId = '';
@@ -120,7 +120,7 @@
 <div class="max-w-lg mx-auto">
 	<h1 class="text-2xl font-bold text-[#e5e5e5] mb-6">Report a Smoker</h1>
 
-	{#if successId}
+	{#if submitted}
 		<div
 			bind:this={successEl}
 			role="status"
@@ -128,13 +128,13 @@
 			class="bg-[#0a1a0a] border border-[#1a4a1a] text-[#6ee77a] rounded-xl p-5 mb-6 focus:outline-none"
 		>
 			<p class="font-semibold text-lg">Report submitted!</p>
-			<p class="text-sm mt-1 text-[#5acc66]">Report ID: <code class="font-mono bg-[#0d220d] px-1 rounded">{successId}</code></p>
+			<p class="text-sm mt-1 text-[#5acc66]">Car {submitted.carNumber} on the {LINE_DISPLAY_NAMES[submitted.line]} is reported until <time datetime={submitted.expiresAt}>{new Date(submitted.expiresAt).toLocaleTimeString('en-US', { timeStyle: 'short' })}</time>.</p>
 			<p class="text-sm mt-3 text-[#5acc66]">This report has been submitted to the CTA on your behalf.</p>
 			<a
 				href="/"
 				class="mt-2 inline-block text-sm text-[#5acc66] underline hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6ee77a] focus-visible:outline-offset-2 rounded-sm"
 			>
-				View today's reports
+				View active reports
 			</a>
 		</div>
 	{/if}

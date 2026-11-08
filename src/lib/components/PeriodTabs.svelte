@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type { AggregatePeriod } from '$lib/types';
+	import type { CountPeriod } from '$lib/types';
 	import { stepPeriod, isAtCurrentPeriod, isAtMinPeriod, formatPeriodLabel, getCurrentDate } from '$lib/date-utils';
 
 	let { period, date, pickerOpen = false, onchange, onopenpicker, pickerTriggerEl = $bindable<HTMLButtonElement | null>(null) }: {
-		period: AggregatePeriod;
+		period: CountPeriod;
 		date: string;
 		pickerOpen?: boolean;
-		onchange: (period: AggregatePeriod, date: string) => void;
+		onchange: (period: CountPeriod, date: string) => void;
 		onopenpicker: () => void;
 		pickerTriggerEl?: HTMLButtonElement | null;
 	} = $props();
 
-	const TABS: { value: AggregatePeriod; label: string }[] = [
+	const TABS: { value: CountPeriod; label: string }[] = [
 		{ value: 'all-time', label: 'All Time' },
 		{ value: 'year', label: 'Year' },
 		{ value: 'month', label: 'Month' },
@@ -23,7 +23,7 @@
 	let atMin = $derived(isAtMinPeriod(period, date));
 	let label = $derived(formatPeriodLabel(period, date));
 
-	function selectTab(newPeriod: AggregatePeriod): void {
+	function selectTab(newPeriod: CountPeriod): void {
 		if (newPeriod === period) return;
 		const newDate = newPeriod === 'all-time' ? '' : getCurrentDate(newPeriod);
 		onchange(newPeriod, newDate);

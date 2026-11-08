@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import type { AggregatePeriod } from '$lib/types';
+	import type { CountPeriod } from '$lib/types';
 	import { Line } from '$lib/types';
 	import { getCurrentDate } from '$lib/date-utils';
 	import PeriodTabs from '$lib/components/PeriodTabs.svelte';
@@ -9,7 +9,7 @@
 	import Leaderboard from '$lib/components/Leaderboard.svelte';
 	import TrendChart from '$lib/components/TrendChart.svelte';
 
-	let period = $derived((page.url.searchParams.get('period') ?? 'month') as AggregatePeriod);
+	let period = $derived((page.url.searchParams.get('period') ?? 'month') as CountPeriod);
 	let date = $derived(
 		page.url.searchParams.get('date') ??
 		(period !== 'all-time' ? getCurrentDate(period) : '')
@@ -18,7 +18,7 @@
 	let selectedLine = $state<Line | null>(null);
 	let pickerTriggerEl = $state<HTMLButtonElement | null>(null);
 
-	function updateParams(newPeriod: AggregatePeriod, newDate: string): void {
+	function updateParams(newPeriod: CountPeriod, newDate: string): void {
 		pickerOpen = false;
 		selectedLine = null;
 		const params = new URLSearchParams();
@@ -35,10 +35,10 @@
 
 <svelte:head>
 	<title>Stats — CTA Smokers</title>
-	<meta name="description" content="Aggregate smoking report data across all CTA train lines." />
+	<meta name="description" content="Smoking report counts across all CTA train lines." />
 	<link rel="canonical" href="https://ctasmokers.com/stats" />
 	<meta property="og:title" content="Stats — CTA Smokers" />
-	<meta property="og:description" content="Aggregate smoking report data across all CTA train lines." />
+	<meta property="og:description" content="Smoking report counts across all CTA train lines." />
 	<meta property="og:url" content="https://ctasmokers.com/stats" />
 	<meta property="og:type" content="website" />
 </svelte:head>
