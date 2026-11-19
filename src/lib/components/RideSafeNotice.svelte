@@ -33,14 +33,14 @@
 
 	const focus =
 		'focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-2 rounded-sm';
-	const linkClass = `inline-flex items-center min-h-[40px] text-[#c60c30] underline underline-offset-2 ${focus}`;
+	const linkClass = `inline-flex items-center min-h-[32px] sm:min-h-[28px] text-[#c60c30] underline underline-offset-2 ${focus}`;
 	const mailto = (subject: string) =>
 		`mailto:${RIDE_SAFE.feedbackEmail}?subject=${encodeURIComponent(subject)}`;
 </script>
 
 {#if visible}
 	<div
-		class="relative bg-[#171717] border border-[#2a2a2a] border-l-4 border-l-[#c60c30] rounded-xl p-3 sm:p-4 text-[13px] sm:text-sm leading-snug text-[#bbb] {variant === 'banner' ? 'pr-12 mb-3 sm:mb-4' : 'mb-5'}"
+		class="relative bg-[#171717] border border-[#2a2a2a] border-l-4 border-l-[#c60c30] rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-[13px] sm:text-sm leading-snug text-[#bbb] {variant === 'banner' ? 'pr-12 mb-3 sm:mb-4' : 'mb-4'}"
 	>
 		{#if variant === 'banner'}
 			<button
@@ -54,12 +54,12 @@
 			<p class="font-semibold text-[#e5e5e5] text-sm sm:text-base">This report stays on this site. To alert transit staff, use NITA Ride Safe.</p>
 		{/if}
 
-		<div class="mt-2 flex flex-wrap gap-x-5">
+		<div class="mt-0.5 flex flex-wrap gap-x-5">
 			<a href={RIDE_SAFE.url} target="_blank" rel="noopener noreferrer" class={linkClass}>Get the app ↗</a>
 			<a href={RIDE_SAFE.textHref} class="whitespace-nowrap {linkClass}">Text {RIDE_SAFE.textNumber}</a>
 		</div>
 
-		<div class="mt-3 pt-3 border-t border-[#2a2a2a] text-[#999] sm:flex sm:items-center sm:gap-3">
+		<div class="mt-1.5 pt-2 border-t border-[#2a2a2a] text-[#999] sm:flex sm:items-center sm:gap-3">
 			<p class="text-[13px] sm:text-sm">Would you like this site to stay up?</p>
 			<div class="flex flex-wrap gap-x-5">
 				<a href={mailto(RIDE_SAFE.keepSubject)} class={linkClass}>Keep it</a>
