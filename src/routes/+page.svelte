@@ -160,7 +160,7 @@
 </svelte:head>
 
 <div class="flex items-center justify-between mb-4">
-	<h1 class="text-2xl font-bold text-[#e5e5e5]">Active Reports</h1>
+	<h1 tabindex="-1" class="text-2xl font-bold text-[#e5e5e5] focus:outline-none">Active Reports</h1>
 	<div class="flex items-center gap-2 text-sm text-[#888]">
 		{#if refreshing}
 			<svg role="img" aria-label="Refreshing" class="animate-spin h-4 w-4 text-[#888]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

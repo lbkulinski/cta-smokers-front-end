@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { RIDE_SAFE } from '$lib/constants';
 
 	let { variant }: { variant: 'banner' | 'success' } = $props();
@@ -22,13 +22,16 @@
 		mounted = true;
 	});
 
-	function dismiss() {
+	async function dismiss() {
 		dismissed = true;
 		try {
 			localStorage.setItem(RIDE_SAFE.dismissKey, '1');
 		} catch {
 			// Storage unavailable: hidden for this view only.
 		}
+		// The focused × button is removed; hand focus to the page heading so keyboard users keep their place.
+		await tick();
+		document.querySelector<HTMLElement>('main h1')?.focus();
 	}
 
 	const focus =
