@@ -3,8 +3,9 @@
 	import { submitReport, RateLimitError, DuplicateReportError } from '$lib/api';
 	import { Line } from '$lib/types';
 	import type { SmokingReportResponse, SubmitReportRequest } from '$lib/types';
-	import { LINE_DISPLAY_NAMES } from '$lib/constants';
+	import { LINE_DISPLAY_NAMES, RIDE_SAFE } from '$lib/constants';
 	import { getDestinations, getStations } from '$lib/stations';
+	import RideSafeNotice from '$lib/components/RideSafeNotice.svelte';
 
 	const lines = Object.values(Line);
 
@@ -125,11 +126,11 @@
 			bind:this={successEl}
 			role="status"
 			tabindex="-1"
-			class="bg-[#0a1a0a] border border-[#1a4a1a] text-[#6ee77a] rounded-xl p-5 mb-6 focus:outline-none"
+			aria-describedby={RIDE_SAFE.successId}
+			class="bg-[#0a1a0a] border border-[#1a4a1a] text-[#6ee77a] rounded-xl p-5 mb-4 focus:outline-none"
 		>
 			<p class="font-semibold text-lg">Report submitted!</p>
 			<p class="text-sm mt-1 text-[#5acc66]">Car {submitted.carNumber} on the {LINE_DISPLAY_NAMES[submitted.line]} is reported until <time datetime={submitted.expiresAt}>{new Date(submitted.expiresAt).toLocaleTimeString('en-US', { timeStyle: 'short' })}</time>.</p>
-			<p class="text-sm mt-3 text-[#5acc66]">This report has been submitted to the CTA on your behalf.</p>
 			<a
 				href="/"
 				class="mt-2 inline-block text-sm text-[#5acc66] underline hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6ee77a] focus-visible:outline-offset-2 rounded-sm"
@@ -137,6 +138,7 @@
 				View active reports
 			</a>
 		</div>
+		<RideSafeNotice variant="success" />
 	{/if}
 
 	<form onsubmit={handleSubmit} class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-4 sm:p-6 space-y-4 sm:space-y-5" novalidate>

@@ -7,6 +7,7 @@
 	import { Line } from '$lib/types';
 	import { LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES } from '$lib/constants';
 	import { getStationName } from '$lib/stations';
+	import RideSafeNotice from '$lib/components/RideSafeNotice.svelte';
 
 	const LINE_ORDER = [Line.RED, Line.BLUE, Line.BROWN, Line.GREEN, Line.ORANGE, Line.PURPLE, Line.PINK, Line.YELLOW];
 
@@ -159,7 +160,7 @@
 </svelte:head>
 
 <div class="flex items-center justify-between mb-4">
-	<h1 class="text-2xl font-bold text-[#e5e5e5]">Active Reports</h1>
+	<h1 tabindex="-1" class="text-2xl font-bold text-[#e5e5e5] focus:outline-none">Active Reports</h1>
 	<div class="flex items-center gap-2 text-sm text-[#888]">
 		{#if refreshing}
 			<svg role="img" aria-label="Refreshing" class="animate-spin h-4 w-4 text-[#888]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -172,6 +173,8 @@
 		{/if}
 	</div>
 </div>
+
+<RideSafeNotice variant="banner" />
 
 {#if loading}
 	<div role="status" class="sr-only">Loading reports…</div>
