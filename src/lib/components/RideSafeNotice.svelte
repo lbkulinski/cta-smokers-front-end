@@ -43,6 +43,7 @@
 
 {#if visible}
 	<div
+		id={variant === 'success' ? RIDE_SAFE.successId : undefined}
 		class="relative bg-[#171717] border border-[#2a2a2a] border-l-4 border-l-[#c60c30] rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-[13px] sm:text-sm leading-snug text-[#bbb] {variant === 'banner' ? 'pr-12 mb-3 sm:mb-4' : 'mb-4'}"
 	>
 		{#if variant === 'banner'}

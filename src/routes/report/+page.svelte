@@ -3,7 +3,7 @@
 	import { submitReport, RateLimitError, DuplicateReportError } from '$lib/api';
 	import { Line } from '$lib/types';
 	import type { SmokingReportResponse, SubmitReportRequest } from '$lib/types';
-	import { LINE_DISPLAY_NAMES } from '$lib/constants';
+	import { LINE_DISPLAY_NAMES, RIDE_SAFE } from '$lib/constants';
 	import { getDestinations, getStations } from '$lib/stations';
 	import RideSafeNotice from '$lib/components/RideSafeNotice.svelte';
 
@@ -126,6 +126,7 @@
 			bind:this={successEl}
 			role="status"
 			tabindex="-1"
+			aria-describedby={RIDE_SAFE.successId}
 			class="bg-[#0a1a0a] border border-[#1a4a1a] text-[#6ee77a] rounded-xl p-5 mb-4 focus:outline-none"
 		>
 			<p class="font-semibold text-lg">Report submitted!</p>

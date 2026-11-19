@@ -34,12 +34,15 @@ export const LINE_DISPLAY_NAMES: Record<Line, string> = {
 };
 
 // NITA Ride Safe notice. To remove the notice, delete this constant and RideSafeNotice.svelte.
+const RIDE_SAFE_TEXT_NUMBER = '312-313-9015';
+
 export const RIDE_SAFE = {
 	url: 'https://nita.illinois.gov/safety/app',
-	textNumber: '312-313-9015',
-	textHref: 'sms:+13123139015',
+	textNumber: RIDE_SAFE_TEXT_NUMBER,
+	textHref: `sms:+1${RIDE_SAFE_TEXT_NUMBER.replaceAll('-', '')}`,
 	feedbackEmail: 'admin@ctasmokers.com',
 	keepSubject: 'Keep CTA Smokers',
 	shutDownSubject: 'OK to shut down CTA Smokers',
-	dismissKey: 'ride-safe-notice-v1'
+	dismissKey: 'ride-safe-notice-v1',
+	successId: 'ride-safe-success-notice'
 } as const;
