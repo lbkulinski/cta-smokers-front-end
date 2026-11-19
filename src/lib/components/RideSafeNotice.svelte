@@ -34,8 +34,6 @@
 	const focus =
 		'focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-2 rounded-sm';
 	const linkClass = `inline-flex items-center min-h-[40px] text-[#c60c30] underline underline-offset-2 ${focus}`;
-	const buttonClass =
-		'flex-1 sm:flex-none text-center min-h-[40px] inline-flex items-center justify-center rounded-lg border border-[#333] px-3 text-sm text-[#e5e5e5] hover:border-[#666] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-2';
 	const mailto = (subject: string) =>
 		`mailto:${RIDE_SAFE.feedbackEmail}?subject=${encodeURIComponent(subject)}`;
 </script>
@@ -63,9 +61,9 @@
 
 		<div class="mt-3 pt-3 border-t border-[#2a2a2a] text-[#999] sm:flex sm:items-center sm:gap-3">
 			<p class="text-[13px] sm:text-sm">Would you like this site to stay up?</p>
-			<div class="mt-2 sm:mt-0 flex gap-2">
-				<a href={mailto(RIDE_SAFE.keepSubject)} class={buttonClass}>Keep it</a>
-				<a href={mailto(RIDE_SAFE.shutDownSubject)} class={buttonClass}>Fine to shut down</a>
+			<div class="flex flex-wrap gap-x-5">
+				<a href={mailto(RIDE_SAFE.keepSubject)} class={linkClass}>Keep it</a>
+				<a href={mailto(RIDE_SAFE.shutDownSubject)} class={linkClass}>Fine to shut down</a>
 			</div>
 		</div>
 	</div>
