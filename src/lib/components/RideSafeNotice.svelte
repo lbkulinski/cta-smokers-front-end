@@ -1,0 +1,72 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { RIDE_SAFE } from '$lib/constants';
+
+	let { variant }: { variant: 'banner' | 'success' } = $props();
+
+	let mounted = $state(false);
+	let dismissed = $state(false);
+
+	// Banner renders only after mount so people who dismissed it never see a flash
+	// (the home page is prerendered).
+	let visible = $derived(variant === 'success' || (mounted && !dismissed));
+
+	onMount(() => {
+		if (variant === 'banner') {
+			try {
+				dismissed = localStorage.getItem(RIDE_SAFE.dismissKey) === '1';
+			} catch {
+				// Storage unavailable: show the banner.
+			}
+		}
+		mounted = true;
+	});
+
+	function dismiss() {
+		dismissed = true;
+		try {
+			localStorage.setItem(RIDE_SAFE.dismissKey, '1');
+		} catch {
+			// Storage unavailable: hidden for this view only.
+		}
+	}
+
+	const focus =
+		'focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-2 rounded-sm';
+	const linkClass = `inline-flex items-center min-h-[40px] text-[#c60c30] underline underline-offset-2 ${focus}`;
+	const buttonClass =
+		'flex-1 sm:flex-none text-center min-h-[40px] inline-flex items-center justify-center rounded-lg border border-[#333] px-3 text-sm text-[#e5e5e5] hover:border-[#666] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-2';
+	const mailto = (subject: string) =>
+		`mailto:${RIDE_SAFE.feedbackEmail}?subject=${encodeURIComponent(subject)}`;
+</script>
+
+{#if visible}
+	<div
+		class="relative bg-[#171717] border border-[#2a2a2a] border-l-4 border-l-[#c60c30] rounded-xl p-3 sm:p-4 text-[13px] sm:text-sm leading-snug text-[#bbb] {variant === 'banner' ? 'pr-12 mb-3 sm:mb-4' : 'mb-5'}"
+	>
+		{#if variant === 'banner'}
+			<button
+				onclick={dismiss}
+				aria-label="Dismiss"
+				class="absolute top-0 right-0 w-11 h-11 flex items-center justify-center text-[#888] hover:text-white text-xl leading-none rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-[-2px]"
+			><span aria-hidden="true">×</span></button>
+			<p class="font-semibold text-[#e5e5e5] text-sm sm:text-base">NITA has a new rider safety app: Ride Safe.</p>
+			<p class="mt-1">Report smoking and other safety concerns by app or text. Your report goes to the right transit team.</p>
+		{:else}
+			<p class="font-semibold text-[#e5e5e5] text-sm sm:text-base">This report stays on this site. To alert transit staff, use NITA Ride Safe.</p>
+		{/if}
+
+		<div class="mt-2 flex flex-wrap gap-x-5">
+			<a href={RIDE_SAFE.url} target="_blank" rel="noopener noreferrer" class={linkClass}>Get the app ↗</a>
+			<a href={RIDE_SAFE.textHref} class="whitespace-nowrap {linkClass}">Text {RIDE_SAFE.textNumber}</a>
+		</div>
+
+		<div class="mt-3 pt-3 border-t border-[#2a2a2a] text-[#999] sm:flex sm:items-center sm:gap-3">
+			<p class="text-[13px] sm:text-sm">Would you like this site to stay up?</p>
+			<div class="mt-2 sm:mt-0 flex gap-2">
+				<a href={mailto(RIDE_SAFE.keepSubject)} class={buttonClass}>Keep it</a>
+				<a href={mailto(RIDE_SAFE.shutDownSubject)} class={buttonClass}>Fine to shut down</a>
+			</div>
+		</div>
+	</div>
+{/if}
