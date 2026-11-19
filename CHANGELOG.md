@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- NITA Ride Safe notice on the home page (dismissable) and on the report confirmation, with a prompt asking whether the site should stay up
+
+### Removed
+
+- "Submitted to the CTA on your behalf" text from the report confirmation, since report forwarding is disabled
+
 ## [2.0.0] - 2026-11-08
 
 ### Changed
