@@ -53,7 +53,7 @@
 				class="absolute top-0 right-0 w-11 h-11 flex items-center justify-center text-[#888] hover:text-white text-xl leading-none rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-[-2px]"
 			><span aria-hidden="true">×</span></button>
 			<p class="font-semibold text-[#e5e5e5] text-sm sm:text-base">NITA has a new rider safety app: Ride Safe.</p>
-			<p class="mt-1">Report smoking and other safety concerns by app or text. Your report goes to the right transit team.</p>
+			<p class="mt-1">Report smoking and other safety concerns. Reports sent by app or text go to the transit team.</p>
 		{:else}
 			<p class="font-semibold text-[#e5e5e5] text-sm sm:text-base">Transit staff haven't been notified. To alert them, report with NITA Ride Safe.</p>
 		{/if}
