@@ -51,7 +51,7 @@
 			<p class="font-semibold text-[#e5e5e5] text-sm sm:text-base">NITA has a new rider safety app: Ride Safe.</p>
 			<p class="mt-1">Report smoking and other safety concerns by app or text. Your report goes to the right transit team.</p>
 		{:else}
-			<p class="font-semibold text-[#e5e5e5] text-sm sm:text-base">This report stays on this site. To alert transit staff, use NITA Ride Safe.</p>
+			<p class="font-semibold text-[#e5e5e5] text-sm sm:text-base">Transit staff haven't been notified. To alert them, report with NITA Ride Safe.</p>
 		{/if}
 
 		<div class="mt-0.5 flex flex-wrap gap-x-5">

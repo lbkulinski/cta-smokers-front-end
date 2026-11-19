@@ -32,7 +32,7 @@ NITA (now running CTA) released a rider safety app, "Ride Safe" (https://nita.il
   - Line 3: "Get the app ↗ · or text 312-313-9015" (red underlined links).
   - Divider, then: "Would you like this site to stay up? Keep it · Fine to shut down", each a `mailto:admin@ctasmokers.com` with a prefilled subject.
 - **Success page (`success` variant):** the green box contains only the confirmation ("Report submitted!", car/line/expiry, "View active reports"). The "submitted to the CTA on your behalf" sentence is removed. Below it, a separate card in the same gray/red-stripe style, no dismiss:
-  - Bold: "This report stays on this site. To alert transit staff, use NITA Ride Safe."
+  - Bold: "Transit staff haven't been notified. To alert them, report with NITA Ride Safe."
   - Links: "Get the app ↗ · or text 312-313-9015".
   - Divider, then the same feedback line and mailto links as the home box.
   - Rationale: forwarding is off, so the card must correct the old "submitted to the CTA" expectation. The feedback ask is repeated here because people who just reported are the most engaged, and it still reaches those who dismissed the home box.

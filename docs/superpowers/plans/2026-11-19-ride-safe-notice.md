@@ -19,7 +19,7 @@
 - Copy is exact:
   - Banner line 1: `NITA has a new rider safety app: Ride Safe.`
   - Banner line 2: `Report smoking and other safety concerns by app or text. Your report goes to the right transit team.`
-  - Success line: `This report stays on this site. To alert transit staff, use NITA Ride Safe.`
+  - Success line: `Transit staff haven't been notified. To alert them, report with NITA Ride Safe.`
   - Links: `Get the app ↗` and `Text 312-313-9015`
   - Feedback: `Would you like this site to stay up?` with `Keep it` / `Fine to shut down`
 - Mailto subjects: `Keep CTA Smokers` and `OK to shut down CTA Smokers` (URL-encoded).
