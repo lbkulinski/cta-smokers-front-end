@@ -7,6 +7,7 @@
 	import { Line } from '$lib/types';
 	import { LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES } from '$lib/constants';
 	import { getStationName } from '$lib/stations';
+	import RideSafeNotice from '$lib/components/RideSafeNotice.svelte';
 
 	const LINE_ORDER = [Line.RED, Line.BLUE, Line.BROWN, Line.GREEN, Line.ORANGE, Line.PURPLE, Line.PINK, Line.YELLOW];
 
@@ -172,6 +173,8 @@
 		{/if}
 	</div>
 </div>
+
+<RideSafeNotice variant="banner" />
 
 {#if loading}
 	<div role="status" class="sr-only">Loading reports…</div>
