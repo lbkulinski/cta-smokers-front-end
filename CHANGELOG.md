@@ -12,7 +12,7 @@ CTA Smokers no longer collects reports. NITA's Ride Safe is the official way to 
 ### Added
 
 - Report helper on the home page that drafts a text to NITA Ride Safe (312-313-9015) or copies it
-- Archive of submitted report counts, served from static files, with CSV downloads
+- Archive of submitted report counts, served from static files, with the data as a ZIP download
 - Unit tests (`npm test`)
 
 ### Changed

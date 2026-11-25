@@ -6,7 +6,7 @@ CTA Smokers used to collect reports of smoking on Chicago Transit Authority (CTA
 
 - **Ride Safe app link** — the main way to report, at the top of the home page
 - **Text helper** — fill in line, destination, next station and car number, then open a drafted text to Ride Safe (312-313-9015) or copy it. Nothing is stored or sent by the site
-- **Archive** — report counts by line for all time, year, month, week and day, with CSV downloads
+- **Archive** — report counts by line for all time, year, month, week and day, with the data as a ZIP download
 
 ## Tech Stack
 
@@ -32,9 +32,9 @@ npm run preview
 
 ## Data
 
-`static/data/` holds the export of report counts. The archive is built from `daily.csv`; the other files are offered as downloads and the tests check that they agree with it.
+`static/data/` holds the export of report counts. The archive is built from `daily.csv`; visitors download `cta-smokers-report-counts.zip`. The tests check that the other CSVs agree with `daily.csv` and that the zip matches the unpacked files.
 
-To use a later export, replace all the files in `static/data/` with the new ones, then run `npm test` and `npm run build`. Totals and the last date update from the data.
+To use a later export, put the new zip in `static/data/`, unpack it there over the old files, then run `npm test` and `npm run build`. Totals and the last date update from the data.
 
 ## Project Structure
 

@@ -12,8 +12,6 @@
 	import Leaderboard from '$lib/components/Leaderboard.svelte';
 	import TrendChart from '$lib/components/TrendChart.svelte';
 
-	const DOWNLOADS = ['daily.csv', 'weekly.csv', 'monthly.csv', 'yearly.csv', 'all_time.csv', 'README.txt'];
-
 	let view = $derived(
 		parseStatsParams(page.url.searchParams.get('period'), page.url.searchParams.get('date'), DATA_LAST_DATE)
 	);
@@ -73,11 +71,6 @@
 
 <section class="mt-6" aria-labelledby="downloads-heading">
 	<h2 id="downloads-heading" class="text-[#888] text-xs uppercase tracking-wider font-semibold mb-1">Download the data</h2>
-	<ul class="flex flex-wrap gap-x-5">
-		{#each DOWNLOADS as file}
-			<li>
-				<a href="/data/{file}" download class="inline-flex items-center min-h-[32px] text-sm text-[#c60c30] underline underline-offset-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">{file}</a>
-			</li>
-		{/each}
-	</ul>
+	<a href="/data/cta-smokers-report-counts.zip" download class="inline-flex items-center min-h-[32px] text-sm text-[#c60c30] underline underline-offset-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">Download all counts (ZIP)</a>
+	<p class="text-xs text-[#888]">CSV files by day, week, month, year and all time, with a README.</p>
 </section>

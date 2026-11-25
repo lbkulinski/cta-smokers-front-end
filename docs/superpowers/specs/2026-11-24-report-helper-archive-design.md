@@ -77,7 +77,7 @@ Or get the Ride Safe app ↗
 - Same tabs, leaderboard and trend chart, reading a static data file.
 - Defaults to All Time. Date navigation runs from 2026-02-28 to the last date in the data, not to today.
 - A short note: dates covered, total reports, and that counts reflect who used this site, not how much smoking happened. Rider-submitted and unverified.
-- Download links for the CSV files and their README.
+- One download: a zip of the CSV files and their README.
 
 ### `/report`
 
