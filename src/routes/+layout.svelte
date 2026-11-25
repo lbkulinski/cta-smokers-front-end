@@ -7,18 +7,13 @@
 <div class="min-h-dvh bg-[#0d0d0d] flex flex-col">
 	<nav class="bg-[#111111] border-b border-[#c60c30] shadow-lg" aria-label="Main navigation">
 		<div class="max-w-4xl mx-auto px-4 py-3">
-			<div class="flex items-center justify-between">
-				<a href="/" class="text-xl font-bold tracking-tight text-[#c60c30] hover:text-[#e8102e] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded-sm">CTA Smokers</a>
-				<div class="hidden sm:flex gap-6 text-sm font-medium text-[#aaaaaa]">
+			<div class="flex items-center justify-between gap-3">
+				<a href="/" class="text-lg sm:text-xl font-bold tracking-tight whitespace-nowrap text-[#c60c30] hover:text-[#e8102e] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded-sm">CTA Smokers</a>
+				<div class="flex gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-[#aaaaaa]">
 					<a href="/" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Report</a>
 					<a href="/stats" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Archive</a>
 					<a href="mailto:admin@ctasmokers.com" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Contact</a>
 				</div>
-			</div>
-			<div class="flex sm:hidden gap-4 mt-2 text-xs font-medium text-[#aaaaaa] flex-wrap">
-				<a href="/" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Report</a>
-				<a href="/stats" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Archive</a>
-				<a href="mailto:admin@ctasmokers.com" class="hover:text-white transition-colors focus-visible:text-white focus-visible:underline">Contact</a>
 			</div>
 		</div>
 	</nav>
