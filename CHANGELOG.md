@@ -5,11 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.0.0] - 2026-11-24
+
+CTA Smokers no longer collects reports. NITA's Ride Safe is the official way to report.
 
 ### Added
 
-- NITA Ride Safe notice on the home page (dismissable) and on the report confirmation, with a prompt asking whether the site should stay up
+- Link to the NITA Ride Safe app at the top of the home page
+- Report helper on the home page that drafts a text to NITA Ride Safe (312-313-9015) or copies it
+- Archive of submitted report counts, served from static files, with the data as a ZIP download
+- Unit tests (`npm test`)
+
+### Changed
+
+- The stats page is now the archive and no longer calls the API
+- `/report` redirects to the home page
+
+### Removed
+
+- Live feed, report submission, the API client and `VITE_SMOKERS_API_BASE_URL`
 
 ## [2.0.0] - 2026-11-08
 

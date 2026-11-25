@@ -14,40 +14,4 @@ export interface Station {
 	name: string;
 }
 
-export interface SmokingReportResponse {
-	reportedAt: string;
-	expiresAt: string;
-	line: Line;
-	destinationId: string;
-	nextStationId: string;
-	carNumber: string;
-	runNumber: string | null;
-}
-
-export interface SmokingReportsResponse {
-	reports: SmokingReportResponse[];
-	nextCursor: string | null;
-}
-
-export interface SubmitReportRequest {
-	line: Line;
-	destinationId: string;
-	nextStationId: string;
-	carNumber: string;
-	runNumber?: string;
-}
-
 export type CountPeriod = 'all-time' | 'year' | 'month' | 'week' | 'day';
-
-export interface SmokingReportCountResponse {
-	reportCount: number;
-}
-
-export interface SmokingReportDailyCount {
-	date: string;
-	reportCount: number;
-}
-
-export interface SmokingReportDailyCountsResponse {
-	days: SmokingReportDailyCount[];
-}

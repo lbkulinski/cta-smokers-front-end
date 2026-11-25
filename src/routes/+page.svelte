@@ -1,155 +1,101 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { browser } from '$app/environment';
-	import { afterNavigate } from '$app/navigation';
-	import { fetchActiveReports } from '$lib/api';
-	import type { SmokingReportResponse } from '$lib/types';
+	import { tick } from 'svelte';
 	import { Line } from '$lib/types';
-	import { LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES } from '$lib/constants';
-	import { getStationName } from '$lib/stations';
-	import RideSafeNotice from '$lib/components/RideSafeNotice.svelte';
+	import { LINE_DISPLAY_NAMES, RIDE_SAFE } from '$lib/constants';
+	import { getDestinations, getStations } from '$lib/stations';
+	import { buildMessage, buildSmsHref } from '$lib/message';
+	import { TOTAL_REPORTS } from '$lib/data';
 
-	const LINE_ORDER = [Line.RED, Line.BLUE, Line.BROWN, Line.GREEN, Line.ORANGE, Line.PURPLE, Line.PINK, Line.YELLOW];
+	const lines = Object.values(Line);
 
-	let reports: SmokingReportResponse[] = $state([]);
-	let loading = $state(true);
-	let refreshing = $state(false);
-	let loadingMore = $state(false);
-	let error: string | null = $state(null);
-	let lastUpdated: Date | null = $state(null);
-	let nextCursor = $state<string | undefined>(undefined);
-	let hasMore = $derived(!!nextCursor);
-	let selectedLine = $state<Line | null>(null);
-	let interval: ReturnType<typeof setInterval>;
+	let line = $state<Line | ''>('');
+	let destinations = $derived(line ? getDestinations(line as Line) : []);
+	let allStations = $derived(line ? getStations(line as Line) : []);
 
-	function toggleLine(line: Line) {
-		selectedLine = selectedLine === line ? null : line;
+	let destinationId = $state('');
+	let nextStationId = $state('');
+	let carNumber = $state('');
+	let runNumber = $state('');
+
+	let message = $derived(
+		buildMessage({
+			lineName: line ? LINE_DISPLAY_NAMES[line] : '',
+			destinationName: destinations.find((s) => s.id === destinationId)?.name ?? '',
+			nextStationName: allStations.find((s) => s.id === nextStationId)?.name ?? '',
+			carNumber,
+			runNumber
+		})
+	);
+
+	let copyStatus = $state('');
+	let validationError: string | null = $state(null);
+
+	let validationErrorEl: HTMLElement | null = $state(null);
+
+	async function focusAfterUpdate(getEl: () => HTMLElement | null) {
+		await tick();
+		getEl()?.focus();
 	}
 
-	function reportKey(r: SmokingReportResponse): string {
-		return `${r.carNumber}:${r.line}`;
-	}
-
-	function mergeReports(existing: SmokingReportResponse[], incoming: SmokingReportResponse[], now: Date): SmokingReportResponse[] {
-		const byKey = new Map(existing.map((r) => [reportKey(r), r]));
-		for (const r of incoming) byKey.set(reportKey(r), r);
-		return [...byKey.values()]
-			.filter((r) => new Date(r.expiresAt) > now)
-			.sort((a, b) => new Date(b.reportedAt).getTime() - new Date(a.reportedAt).getTime());
-	}
-
-	function groupReports(data: SmokingReportResponse[]): Map<Line, Map<string, SmokingReportResponse[]>> {
-		const grouped = new Map<Line, Map<string, SmokingReportResponse[]>>();
-		for (const report of data) {
-			if (!grouped.has(report.line)) grouped.set(report.line, new Map());
-			const lineGroup = grouped.get(report.line)!;
-			if (!lineGroup.has(report.destinationId)) lineGroup.set(report.destinationId, []);
-			lineGroup.get(report.destinationId)!.push(report);
+	function validate(): boolean {
+		if (!line) {
+			validationError = 'Please select a train line.';
+			focusAfterUpdate(() => validationErrorEl);
+			return false;
 		}
-		return grouped;
-	}
-
-	function timeAgo(iso: string): string {
-		const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-		if (diff < 60) return `${diff}s ago`;
-		if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-		return `${Math.floor(diff / 3600)}h ago`;
-	}
-
-	function formatTime(date: Date): string {
-		return date.toLocaleTimeString('en-US', { hour12: false });
-	}
-
-	async function load() {
-		loading = true;
-		error = null;
-		try {
-			const now = new Date();
-			const page = await fetchActiveReports();
-			nextCursor = page.nextCursor ?? undefined;
-			reports = mergeReports([], page.reports, now);
-			lastUpdated = now;
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to load reports';
-		} finally {
-			loading = false;
+		if (!destinationId) {
+			validationError = 'Destination is required.';
+			focusAfterUpdate(() => validationErrorEl);
+			return false;
 		}
+		if (!nextStationId) {
+			validationError = 'Next station is required.';
+			focusAfterUpdate(() => validationErrorEl);
+			return false;
+		}
+		if (!carNumber) {
+			validationError = 'Car number is required.';
+			focusAfterUpdate(() => validationErrorEl);
+			return false;
+		}
+		if (carNumber.length !== 4) {
+			validationError = 'Car number must be exactly 4 digits.';
+			focusAfterUpdate(() => validationErrorEl);
+			return false;
+		}
+		if (runNumber && runNumber.length !== 3) {
+			validationError = 'Run number must be exactly 3 digits.';
+			focusAfterUpdate(() => validationErrorEl);
+			return false;
+		}
+		validationError = null;
+		return true;
 	}
 
-	async function refresh() {
-		refreshing = true;
+	function openText(e: Event) {
+		e.preventDefault();
+		if (!validate()) return;
+		window.location.href = buildSmsHref(message);
+	}
+
+	async function copyMessage() {
+		copyStatus = '';
+		if (!validate()) return;
 		try {
-			const now = new Date();
-			const page = await fetchActiveReports();
-			if (!page.nextCursor) {
-				// A first page without a cursor is the complete active set, so drop anything the API no longer returns.
-				nextCursor = undefined;
-				reports = mergeReports([], page.reports, now);
-			} else {
-				if (!nextCursor) nextCursor = page.nextCursor;
-				reports = mergeReports(reports, page.reports, now);
-			}
-			error = null;
-			lastUpdated = now;
+			await navigator.clipboard.writeText(message);
+			copyStatus = `Copied. Paste it into a text to ${RIDE_SAFE.textNumber}.`;
 		} catch {
-			// Keep the cached reports (minus any that have expired); the next refresh will retry.
-			reports = mergeReports(reports, [], new Date());
-		} finally {
-			refreshing = false;
+			copyStatus = "Couldn't copy. Select the message above and copy it.";
 		}
 	}
-
-	async function loadMore() {
-		if (!nextCursor) return;
-		loadingMore = true;
-		try {
-			const page = await fetchActiveReports(nextCursor);
-			nextCursor = page.nextCursor ?? undefined;
-			reports = mergeReports(reports, page.reports, new Date());
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to load more reports';
-		} finally {
-			loadingMore = false;
-		}
-	}
-
-	afterNavigate(() => load());
-
-	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-	function onVisible() {
-		if (document.visibilityState !== 'visible') return;
-		if (debounceTimer) return;
-		debounceTimer = setTimeout(() => { debounceTimer = null; }, 2000);
-		refresh();
-	}
-
-	onMount(() => {
-		interval = setInterval(() => refresh(), 30_000);
-		document.addEventListener('visibilitychange', onVisible);
-		window.addEventListener('focus', onVisible);
-	});
-
-	onDestroy(() => {
-		clearInterval(interval);
-		if (debounceTimer) clearTimeout(debounceTimer);
-		if (browser) {
-			document.removeEventListener('visibilitychange', onVisible);
-			window.removeEventListener('focus', onVisible);
-		}
-	});
-
-	let availableLines = $derived(LINE_ORDER.filter((l) => reports.some((r) => r.line === l)));
-	let filteredReports = $derived(selectedLine === null ? reports : reports.filter((r) => r.line === selectedLine));
-	let grouped = $derived(groupReports(filteredReports));
-	let lineOrder = $derived([...grouped.keys()]);
 </script>
 
 <svelte:head>
-	<title>CTA Smokers</title>
-	<meta name="description" content="See active smoking reports on CTA trains in real time. Help keep Chicago Transit Authority rail lines smoke-free." />
+	<title>CTA Smokers — Report smoking to Ride Safe</title>
+	<meta name="description" content="Draft a text to NITA Ride Safe about smoking on a CTA train, and see the CTA Smokers archive." />
 	<link rel="canonical" href="https://ctasmokers.com/" />
-	<meta property="og:title" content="CTA Smokers" />
-	<meta property="og:description" content="See active smoking reports on CTA trains in real time. Help keep Chicago Transit Authority rail lines smoke-free." />
+	<meta property="og:title" content="CTA Smokers — Report smoking to Ride Safe" />
+	<meta property="og:description" content="Draft a text to NITA Ride Safe about smoking on a CTA train, and see the CTA Smokers archive." />
 	<meta property="og:url" content="https://ctasmokers.com/" />
 	<meta property="og:type" content="website" />
 	<meta property="og:image" content="https://ctasmokers.com/og-image.png" />
@@ -159,119 +105,149 @@
 	<meta name="twitter:image" content="https://ctasmokers.com/og-image.png" />
 </svelte:head>
 
-<div class="flex items-center justify-between mb-4">
-	<h1 tabindex="-1" class="text-2xl font-bold text-[#e5e5e5] focus:outline-none">Active Reports</h1>
-	<div class="flex items-center gap-2 text-sm text-[#888]">
-		{#if refreshing}
-			<svg role="img" aria-label="Refreshing" class="animate-spin h-4 w-4 text-[#888]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-			</svg>
-		{/if}
-		{#if lastUpdated}
-			<span aria-live="polite" aria-atomic="true">Updated {formatTime(lastUpdated)}</span>
-		{/if}
+<div class="max-w-lg mx-auto">
+	<h1 class="text-2xl font-bold text-[#e5e5e5] mb-2">Report smoking to NITA Ride Safe</h1>
+	<p class="text-sm text-[#bbb] mb-1">CTA Smokers no longer collects reports. This site is not run by NITA or the CTA.</p>
+	<p class="text-sm font-semibold text-[#e5e5e5] mb-4"><a href="tel:911" class="inline-flex items-center min-h-[32px] text-[#c60c30] underline underline-offset-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">Emergency? Call 911.</a></p>
+
+	<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-4 mb-6">
+		<p class="text-sm text-[#e5e5e5] mb-3">Ride Safe is NITA's app for reporting safety concerns on CTA, Metra and Pace.</p>
+		<a
+			href={RIDE_SAFE.url}
+			target="_blank"
+			rel="noopener noreferrer"
+			class="block w-full bg-[#c60c30] text-white text-center font-semibold py-3 text-base rounded-lg hover:bg-[#a00828] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+		>
+			Get the Ride Safe app ↗
+		</a>
 	</div>
+
+	<h2 class="text-lg font-semibold text-[#e5e5e5] mb-1">Or report by text</h2>
+	<p class="text-sm text-[#888] mb-3">Fill this in and we'll draft the message for you.</p>
+
+	<form onsubmit={openText} oninput={() => (copyStatus = '')} onchange={() => (copyStatus = '')} class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-4 sm:p-6 space-y-4 sm:space-y-5" novalidate>
+		{#if validationError}
+			<p
+				bind:this={validationErrorEl}
+				role="alert"
+				tabindex="-1"
+				class="text-sm text-[#f87171] bg-[#1a0808] border border-[#5a1010] rounded-lg px-3 py-2 focus:outline-none"
+			>{validationError}</p>
+		{/if}
+		<div>
+			<label for="line" class="block text-sm font-medium text-[#aaa] mb-1">Train Line <span class="text-[#c60c30]" aria-hidden="true">*</span><span class="sr-only">(required)</span></label>
+			<select
+				id="line"
+				bind:value={line}
+				onchange={() => { destinationId = ''; nextStationId = ''; }}
+				required
+				aria-required="true"
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
+			>
+				<option value="">Select a line…</option>
+				{#each lines as l}
+					<option value={l}>{LINE_DISPLAY_NAMES[l]}</option>
+				{/each}
+			</select>
+		</div>
+
+		<div>
+			<label for="destinationId" class="block text-sm font-medium text-[#aaa] mb-1">Destination <span class="text-[#c60c30]" aria-hidden="true">*</span><span class="sr-only">(required)</span></label>
+			<select
+				id="destinationId"
+				bind:value={destinationId}
+				required
+				aria-required="true"
+				disabled={!line}
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:opacity-40"
+			>
+				<option value="">{!line ? 'Select a line first…' : 'Select a destination…'}</option>
+				{#each destinations as station}
+					<option value={station.id}>{station.name}</option>
+				{/each}
+			</select>
+		</div>
+
+		<div>
+			<label for="nextStationId" class="block text-sm font-medium text-[#aaa] mb-1">Next Station <span class="text-[#c60c30]" aria-hidden="true">*</span><span class="sr-only">(required)</span></label>
+			<select
+				id="nextStationId"
+				bind:value={nextStationId}
+				required
+				aria-required="true"
+				disabled={!line}
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent disabled:opacity-40"
+			>
+				<option value="">{!line ? 'Select a line first…' : 'Select next station…'}</option>
+				{#each allStations as station}
+					<option value={station.id}>{station.name}</option>
+				{/each}
+			</select>
+		</div>
+
+		<div>
+			<label for="carNumber" class="block text-sm font-medium text-[#aaa] mb-1">Car Number <span class="text-[#c60c30]" aria-hidden="true">*</span><span class="sr-only">(required)</span></label>
+			<input
+				id="carNumber"
+				type="text"
+				inputmode="numeric"
+				pattern="[0-9]{4}"
+				maxlength="4"
+				bind:value={carNumber}
+				oninput={() => { carNumber = carNumber.replace(/\D/g, ''); }}
+				placeholder="e.g. 5432"
+				required
+				aria-required="true"
+				aria-describedby="carNumberHint"
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
+			/>
+			<p id="carNumberHint" class="text-xs text-[#888] mt-1">Displayed at both ends of the car's interior and on the exterior beside the sliding exit doors.</p>
+		</div>
+
+		<div>
+			<label for="runNumber" class="block text-sm font-medium text-[#aaa] mb-1">Run Number <span class="text-[#888] font-normal">(optional)</span></label>
+			<input
+				id="runNumber"
+				type="text"
+				inputmode="numeric"
+				pattern="[0-9]{3}"
+				maxlength="3"
+				bind:value={runNumber}
+				oninput={() => { runNumber = runNumber.replace(/\D/g, ''); }}
+				placeholder="e.g. 101"
+				aria-describedby="runNumberHint"
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] placeholder-[#555] rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#c60c30] focus:border-transparent"
+			/>
+			<p id="runNumberHint" class="text-xs text-[#888] mt-1">Displayed in the operator's cab window at the front of the train.</p>
+		</div>
+
+		<div>
+			<p class="text-sm font-medium text-[#aaa] mb-1">Your message</p>
+			<p class="min-h-[3rem] select-all break-words bg-[#111111] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-[#e5e5e5]">
+				{#if message}{message}{:else}<span class="text-[#888]">Select a line to start.</span>{/if}
+			</p>
+		</div>
+
+		<div class="space-y-2">
+			<button
+				type="submit"
+				class="w-full border border-[#c60c30] text-[#e5e5e5] font-semibold py-3 text-base rounded-lg hover:bg-[#2a1014] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+			>
+				Open text to {RIDE_SAFE.textNumber}
+			</button>
+			<button
+				type="button"
+				onclick={copyMessage}
+				class="w-full bg-[#1f1f1f] border border-[#333] text-[#e5e5e5] font-semibold py-3 text-base rounded-lg hover:bg-[#2a2a2a] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+			>
+				Copy message
+			</button>
+			<p role="status" class="text-sm text-[#e5e5e5] min-h-[1.25rem]">{copyStatus}</p>
+			<p class="text-xs text-[#888]">Nothing is sent until you press send in your messaging app.</p>
+		</div>
+	</form>
+
+	<p class="mt-4 pt-4 border-t border-[#2a2a2a] text-sm text-[#bbb]">
+		{TOTAL_REPORTS} reports were submitted here in 2026. <a href="/stats" class="text-[#c60c30] underline underline-offset-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">See the archive →</a>
+	</p>
 </div>
-
-<RideSafeNotice variant="banner" />
-
-{#if loading}
-	<div role="status" class="sr-only">Loading reports…</div>
-	<div class="space-y-4" aria-hidden="true">
-		{#each [1, 2, 3] as _}
-			<div class="animate-pulse bg-[#171717] rounded-xl border border-[#2a2a2a] p-4">
-				<div class="h-6 bg-[#2a2a2a] rounded w-32 mb-3"></div>
-				<div class="h-4 bg-[#222] rounded w-24 mb-2"></div>
-				<div class="h-16 bg-[#222] rounded"></div>
-			</div>
-		{/each}
-	</div>
-{:else if error}
-	<div role="alert" class="bg-[#1a0808] border border-[#5a1010] text-[#f87171] rounded-xl p-4">
-		<p class="font-semibold">Error loading reports</p>
-		<p class="text-sm mt-1">{error}</p>
-		<button onclick={() => load()} class="mt-3 text-sm underline hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f87171] focus-visible:outline-offset-2 rounded">Try again</button>
-	</div>
-{:else if reports.length === 0}
-	<div role="status" class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-8 text-center text-[#888]">
-		<p class="text-lg">No active reports right now.</p>
-		<p class="text-sm mt-1"><a href="/report" class="text-[#c60c30] underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-2 rounded-sm">Report a smoker</a> if you see one.</p>
-	</div>
-{:else}
-	{#if availableLines.length > 1}
-		<div class="flex gap-2 overflow-x-auto pb-3 mb-4" style="scrollbar-width: none; -webkit-overflow-scrolling: touch;" role="group" aria-label="Filter by train line">
-			{#each availableLines as line}
-				<button
-					onclick={() => toggleLine(line)}
-					aria-pressed={selectedLine === line}
-					class="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-semibold transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-					style="background-color: {LINE_COLORS[line]}; color: {LINE_TEXT_COLORS[line]}; opacity: {selectedLine === null || selectedLine === line ? 1 : 0.35};"
-				>
-					{LINE_DISPLAY_NAMES[line]}
-				</button>
-			{/each}
-		</div>
-	{/if}
-
-	{#if lineOrder.length === 0}
-		<div role="status" class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-8 text-center text-[#888]">
-			<p>No {LINE_DISPLAY_NAMES[selectedLine!]} reports right now.</p>
-			<button onclick={() => (selectedLine = null)} class="mt-2 text-sm text-[#c60c30] underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-2 rounded-sm">Show all lines</button>
-		</div>
-	{:else}
-		<div class="space-y-6">
-			{#each lineOrder as line}
-				{@const lineMap = grouped.get(line)!}
-				{@const bg = LINE_COLORS[line]}
-				{@const fg = LINE_TEXT_COLORS[line]}
-				{@const total = [...lineMap.values()].reduce((s, g) => s + g.length, 0)}
-				<div class="bg-[#171717] border border-[#2a2a2a] rounded-xl overflow-hidden">
-					<div class="px-4 py-3 flex items-center gap-3" style="background-color: {bg}; color: {fg};">
-						<span class="font-bold text-lg">{LINE_DISPLAY_NAMES[line]}</span>
-						<span class="text-sm opacity-80">({total} report{total !== 1 ? 's' : ''})</span>
-					</div>
-					<div class="divide-y divide-[#2a2a2a]">
-						{#each [...lineMap.entries()] as [destinationId, destReports]}
-							<div class="px-4 py-3">
-								<h3 class="text-xs font-semibold text-[#888] uppercase tracking-wider mb-2.5">
-									<span aria-hidden="true">→</span>
-									<span class="sr-only">Toward</span>
-									{getStationName(destinationId)}
-								</h3>
-								<div class="space-y-2">
-									{#each destReports as report (reportKey(report))}
-										<article class="flex items-center gap-3 text-sm bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2.5">
-											<div class="flex-1 min-w-0">
-												<div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-													<span class="font-semibold text-[#e5e5e5]">Car {report.carNumber}</span>
-													{#if report.runNumber}
-														<span class="text-[#888] text-xs">Run {report.runNumber}</span>
-													{/if}
-												</div>
-												<div class="text-[#888] text-xs mt-0.5">Next: {getStationName(report.nextStationId)}</div>
-											</div>
-											<div class="flex-shrink-0 flex flex-col items-end gap-1">
-												<time datetime={report.reportedAt} class="text-xs text-[#888]">{timeAgo(report.reportedAt)}</time>
-											</div>
-										</article>
-									{/each}
-								</div>
-							</div>
-						{/each}
-					</div>
-				</div>
-			{/each}
-
-			{#if hasMore}
-				<button
-					onclick={loadMore}
-					disabled={loadingMore}
-					class="w-full py-3 rounded-xl border border-[#2a2a2a] text-sm text-[#888] hover:text-[#e5e5e5] hover:border-[#444] transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c60c30] focus-visible:outline-offset-2"
-				>
-					{loadingMore ? 'Loading…' : 'Load more'}
-				</button>
-			{/if}
-		</div>
-	{/if}
-{/if}
