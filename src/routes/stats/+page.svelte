@@ -6,6 +6,7 @@
 	import { parseStatsParams } from '$lib/counts';
 	import { DATA_LAST_DATE, TOTAL_REPORTS } from '$lib/data';
 	import { APP_MIN_DATE, formatPeriodLabel } from '$lib/date-utils';
+	import { RIDE_SAFE } from '$lib/constants';
 	import PeriodTabs from '$lib/components/PeriodTabs.svelte';
 	import PeriodPicker from '$lib/components/PeriodPicker.svelte';
 	import Leaderboard from '$lib/components/Leaderboard.svelte';
@@ -48,6 +49,7 @@
 </svelte:head>
 
 <h1 class="text-2xl font-bold text-[#e5e5e5] mb-2">Archive</h1>
+<p class="text-sm text-[#e5e5e5] mb-3">CTA Smokers no longer collects reports. This site is not run by NITA or the CTA. To report smoking, text NITA Ride Safe at {RIDE_SAFE.textNumber}. <a href="/" class="text-[#c60c30] underline underline-offset-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">Draft a message →</a></p>
 <p class="text-sm text-[#bbb] mb-1">{TOTAL_REPORTS} reports, {formatPeriodLabel('day', APP_MIN_DATE)} to {formatPeriodLabel('day', DATA_LAST_DATE)}.</p>
 <p class="text-sm text-[#888] mb-4">Counts show who used this site, not how much smoking happened. Reports were submitted by riders and are not verified.</p>
 

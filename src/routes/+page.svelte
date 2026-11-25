@@ -227,7 +227,7 @@
 			>
 				Copy message
 			</button>
-			<p role="status" class="text-sm text-[#e5e5e5] empty:hidden">{copyStatus}</p>
+			<p role="status" class="text-sm text-[#e5e5e5] min-h-[1.25rem]">{copyStatus}</p>
 			<p class="text-xs text-[#888]">Nothing is sent until you press send in your messaging app.</p>
 		</div>
 	</form>
