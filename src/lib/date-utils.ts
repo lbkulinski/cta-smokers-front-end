@@ -3,9 +3,16 @@ import type { CountPeriod } from './types';
 export const APP_LAUNCH_YEAR = 2026;
 export const APP_MIN_DATE = '2026-02-28';
 
-export function getChicagoParts(): { year: number; month: number; day: number } {
-	const s = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-	const [year, month, day] = s.split('-').map(Number);
+// The archive ends at the last date in the data, not today. data.ts sets it on load.
+// Matches APP_MIN_DATE until then.
+let dataEnd = '2026-02-28';
+
+export function setDataEnd(date: string): void {
+	dataEnd = date;
+}
+
+export function getEndParts(): { year: number; month: number; day: number } {
+	const [year, month, day] = dataEnd.split('-').map(Number);
 	return { year, month, day };
 }
 
@@ -27,7 +34,7 @@ export function isoWeeksInYear(year: number): number {
 }
 
 export function getCurrentDate(period: Exclude<CountPeriod, 'all-time'>): string {
-	const { year, month, day } = getChicagoParts();
+	const { year, month, day } = getEndParts();
 	if (period === 'month') return `${year}-${String(month).padStart(2, '0')}`;
 	if (period === 'year') return String(year);
 	if (period === 'week') return getISOWeekString(year, month, day);
@@ -106,12 +113,12 @@ export function getTrendSubPeriods(
 	period: CountPeriod,
 	date: string
 ): { subPeriod: Exclude<CountPeriod, 'all-time'>; value: string }[] {
-	const { year: chicagoYear, month: chicagoMonth, day: chicagoDay } = getChicagoParts();
-	const todayStr = `${chicagoYear}-${String(chicagoMonth).padStart(2, '0')}-${String(chicagoDay).padStart(2, '0')}`;
+	const { year: endYear, month: endMonth, day: endDay } = getEndParts();
+	const lastStr = `${endYear}-${String(endMonth).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
 
 	if (period === 'all-time') {
 		const result: { subPeriod: Exclude<CountPeriod, 'all-time'>; value: string }[] = [];
-		for (let y = APP_LAUNCH_YEAR; y <= chicagoYear; y++) {
+		for (let y = APP_LAUNCH_YEAR; y <= endYear; y++) {
 			result.push({ subPeriod: 'year', value: String(y) });
 		}
 		return result;
@@ -119,7 +126,7 @@ export function getTrendSubPeriods(
 
 	if (period === 'year') {
 		const year = parseInt(date);
-		const maxMonth = year < chicagoYear ? 12 : chicagoMonth;
+		const maxMonth = year < endYear ? 12 : endMonth;
 		const result: { subPeriod: Exclude<CountPeriod, 'all-time'>; value: string }[] = [];
 		for (let m = 1; m <= maxMonth; m++) {
 			result.push({ subPeriod: 'month', value: `${year}-${String(m).padStart(2, '0')}` });
@@ -133,7 +140,7 @@ export function getTrendSubPeriods(
 		const result: { subPeriod: Exclude<CountPeriod, 'all-time'>; value: string }[] = [];
 		for (let d = 1; d <= daysInMonth; d++) {
 			const dayStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-			if (dayStr > todayStr) break;
+			if (dayStr > lastStr) break;
 			result.push({ subPeriod: 'day', value: dayStr });
 		}
 		return result;
@@ -151,7 +158,7 @@ export function getTrendSubPeriods(
 			const day = new Date(monday);
 			day.setUTCDate(monday.getUTCDate() + d);
 			const dayStr = day.toISOString().slice(0, 10);
-			if (dayStr > todayStr) break;
+			if (dayStr > lastStr) break;
 			result.push({ subPeriod: 'day', value: dayStr });
 		}
 		return result;

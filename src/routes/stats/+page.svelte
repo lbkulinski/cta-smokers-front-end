@@ -3,17 +3,21 @@
 	import { goto } from '$app/navigation';
 	import type { CountPeriod } from '$lib/types';
 	import { Line } from '$lib/types';
-	import { getCurrentDate } from '$lib/date-utils';
+	import { parseStatsParams } from '$lib/counts';
+	import { DATA_LAST_DATE, TOTAL_REPORTS } from '$lib/data';
+	import { APP_MIN_DATE, formatPeriodLabel } from '$lib/date-utils';
 	import PeriodTabs from '$lib/components/PeriodTabs.svelte';
 	import PeriodPicker from '$lib/components/PeriodPicker.svelte';
 	import Leaderboard from '$lib/components/Leaderboard.svelte';
 	import TrendChart from '$lib/components/TrendChart.svelte';
 
-	let period = $derived((page.url.searchParams.get('period') ?? 'month') as CountPeriod);
-	let date = $derived(
-		page.url.searchParams.get('date') ??
-		(period !== 'all-time' ? getCurrentDate(period) : '')
+	const DOWNLOADS = ['daily.csv', 'weekly.csv', 'monthly.csv', 'yearly.csv', 'all_time.csv', 'README.txt'];
+
+	let view = $derived(
+		parseStatsParams(page.url.searchParams.get('period'), page.url.searchParams.get('date'), DATA_LAST_DATE)
 	);
+	let period = $derived(view.period);
+	let date = $derived(view.date);
 	let pickerOpen = $state(false);
 	let selectedLine = $state<Line | null>(null);
 	let pickerTriggerEl = $state<HTMLButtonElement | null>(null);
@@ -34,16 +38,18 @@
 </script>
 
 <svelte:head>
-	<title>Stats — CTA Smokers</title>
-	<meta name="description" content="Smoking report counts across all CTA train lines." />
+	<title>Archive — CTA Smokers</title>
+	<meta name="description" content="Smoking reports riders submitted to CTA Smokers in 2026." />
 	<link rel="canonical" href="https://ctasmokers.com/stats" />
-	<meta property="og:title" content="Stats — CTA Smokers" />
-	<meta property="og:description" content="Smoking report counts across all CTA train lines." />
+	<meta property="og:title" content="Archive — CTA Smokers" />
+	<meta property="og:description" content="Smoking reports riders submitted to CTA Smokers in 2026." />
 	<meta property="og:url" content="https://ctasmokers.com/stats" />
 	<meta property="og:type" content="website" />
 </svelte:head>
 
-<h1 class="text-2xl font-bold text-[#e5e5e5] mb-4">Statistics</h1>
+<h1 class="text-2xl font-bold text-[#e5e5e5] mb-2">Archive</h1>
+<p class="text-sm text-[#bbb] mb-1">{TOTAL_REPORTS} reports, {formatPeriodLabel('day', APP_MIN_DATE)} to {formatPeriodLabel('day', DATA_LAST_DATE)}.</p>
+<p class="text-sm text-[#888] mb-4">Counts show who used this site, not how much smoking happened. Reports were submitted by riders and are not verified.</p>
 
 <div class="mb-6 relative">
 	<PeriodTabs {period} {date} {pickerOpen} onchange={updateParams} onopenpicker={() => (pickerOpen = !pickerOpen)} bind:pickerTriggerEl />
@@ -62,3 +68,14 @@
 {#if selectedLine !== null && period !== 'day'}
 	<TrendChart line={selectedLine} {period} {date} />
 {/if}
+
+<section class="mt-6" aria-labelledby="downloads-heading">
+	<h2 id="downloads-heading" class="text-[#888] text-xs uppercase tracking-wider font-semibold mb-1">Download the data</h2>
+	<ul class="flex flex-wrap gap-x-5">
+		{#each DOWNLOADS as file}
+			<li>
+				<a href="/data/{file}" download class="inline-flex items-center min-h-[32px] text-sm text-[#c60c30] underline underline-offset-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">{file}</a>
+			</li>
+		{/each}
+	</ul>
+</section>

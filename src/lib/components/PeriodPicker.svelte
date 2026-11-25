@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { CountPeriod } from '$lib/types';
-	import { isoWeeksInYear, getISOWeekString, getChicagoParts, formatWeekRange, APP_MIN_DATE, APP_MIN_WEEK, APP_LAUNCH_YEAR } from '$lib/date-utils';
+	import { isoWeeksInYear, getISOWeekString, getEndParts, formatWeekRange, APP_MIN_DATE, APP_MIN_WEEK, APP_LAUNCH_YEAR } from '$lib/date-utils';
 
 	let { period, date, onselect, onclose }: {
 		period: Exclude<CountPeriod, 'all-time'>;
@@ -9,8 +9,8 @@
 		onclose: () => void;
 	} = $props();
 
-	const { year: nowYear, month: nowMonth, day: nowDay } = getChicagoParts();
-	const todayStr = `${nowYear}-${String(nowMonth).padStart(2, '0')}-${String(nowDay).padStart(2, '0')}`;
+	const { year: endYear, month: endMonth, day: endDay } = getEndParts();
+	const lastStr = `${endYear}-${String(endMonth).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
 	const MIN_DATE = APP_MIN_DATE;
 	const MIN_WEEK = APP_MIN_WEEK;
 	const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -24,18 +24,18 @@
 		if (period === 'day') return parseInt(date.split('-')[0]);
 		if (period === 'month') return parseInt(date.split('-')[0]);
 		if (period === 'year') return parseInt(date);
-		return nowYear;
+		return endYear;
 	}
 
 	function initPickerMonth(): number {
 		if (period === 'day') return parseInt(date.split('-')[1]);
-		return nowMonth;
+		return endMonth;
 	}
 
 	// Month picker helpers
 	function isMonthDisabled(month: number): boolean {
-		return pickerYear > nowYear ||
-			(pickerYear === nowYear && month > nowMonth) ||
+		return pickerYear > endYear ||
+			(pickerYear === endYear && month > endMonth) ||
 			(pickerYear === APP_LAUNCH_YEAR && month < 2);
 	}
 
@@ -47,19 +47,19 @@
 	// Year picker helpers
 	function getYearList(): number[] {
 		const years: number[] = [];
-		for (let y = nowYear; y >= APP_LAUNCH_YEAR; y--) years.push(y);
+		for (let y = endYear; y >= APP_LAUNCH_YEAR; y--) years.push(y);
 		return years;
 	}
 
 	// Week picker helpers
 	function getWeekList(): string[] {
 		const total = isoWeeksInYear(pickerYear);
-		const currentWeek = getISOWeekString(nowYear, nowMonth, nowDay);
+		const lastWeek = getISOWeekString(endYear, endMonth, endDay);
 		const weeks: string[] = [];
 		for (let w = total; w >= 1; w--) {
 			const weekStr = `${pickerYear}-W${String(w).padStart(2, '0')}`;
 			if (pickerYear === APP_LAUNCH_YEAR && weekStr < MIN_WEEK) break;
-			if (pickerYear < nowYear || weekStr <= currentWeek) weeks.push(weekStr);
+			if (pickerYear < endYear || weekStr <= lastWeek) weeks.push(weekStr);
 		}
 		return weeks;
 	}
@@ -89,7 +89,7 @@
 	const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 	function isDayDisabled(dayDate: string): boolean {
-		return dayDate > todayStr || dayDate < MIN_DATE;
+		return dayDate > lastStr || dayDate < MIN_DATE;
 	}
 
 	function navDayMonth(delta: number): void {
@@ -99,8 +99,8 @@
 	}
 
 	let dayNavNextDisabled = $derived(
-		pickerYear > nowYear ||
-		(pickerYear === nowYear && pickerMonth >= nowMonth)
+		pickerYear > endYear ||
+		(pickerYear === endYear && pickerMonth >= endMonth)
 	);
 
 	let dayNavPrevDisabled = $derived(pickerYear < APP_LAUNCH_YEAR || (pickerYear === APP_LAUNCH_YEAR && pickerMonth <= 2));
@@ -147,7 +147,7 @@
 		<div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
 			<button aria-label="Previous year" onclick={() => pickerYear--} disabled={pickerYear <= APP_LAUNCH_YEAR} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
 			<span class="text-[#e5e5e5] text-sm font-semibold">{pickerYear}</span>
-			<button aria-label="Next year" onclick={() => pickerYear++} disabled={pickerYear >= nowYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
+			<button aria-label="Next year" onclick={() => pickerYear++} disabled={pickerYear >= endYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
 		</div>
 		<div class="grid grid-cols-4 gap-1 p-3">
 			{#each MONTHS_SHORT as monthName, i}
@@ -180,7 +180,7 @@
 		<div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
 			<button aria-label="Previous year" onclick={() => pickerYear--} disabled={pickerYear <= APP_LAUNCH_YEAR} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">‹</button>
 			<span class="text-[#e5e5e5] text-sm font-semibold">{pickerYear}</span>
-			<button aria-label="Next year" onclick={() => pickerYear++} disabled={pickerYear >= nowYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
+			<button aria-label="Next year" onclick={() => pickerYear++} disabled={pickerYear >= endYear} class="text-[#aaa] hover:text-white disabled:opacity-30 p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 rounded">›</button>
 		</div>
 		<div class="max-h-60 overflow-y-auto py-1">
 			{#each getWeekList() as week}
