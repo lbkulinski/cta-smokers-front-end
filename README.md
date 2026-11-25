@@ -1,98 +1,52 @@
 # CTA Smokers — Front End
 
-A web app for reporting and tracking smoking incidents on Chicago Transit Authority (CTA) trains. Built with SvelteKit as a static SPA.
+CTA Smokers used to collect reports of smoking on Chicago Transit Authority (CTA) trains. It no longer does. The site now helps riders text NITA Ride Safe and keeps an archive of the counts submitted here. It is not run by NITA or the CTA.
 
 ## Features
 
-- **Live feed** — active smoking reports, newest first, grouped by line and destination, with 30-second auto-refresh
-- **Submit reports** — report a smoking incident with line, destination, next stop, car number, and optional run number
-- **All 8 CTA lines** — Red, Blue, Brown, Green, Orange, Purple, Pink, and Yellow
+- **Report helper** — fill in line, destination, next station and car number, then open a drafted text to Ride Safe (312-313-9015) or copy it. Nothing is stored or sent by the site
+- **Archive** — report counts by line for all time, year, month, week and day, with CSV downloads
 
 ## Tech Stack
 
-- [SvelteKit](https://kit.svelte.dev/) (static SPA via `@sveltejs/adapter-static`)
-- [Svelte 5](https://svelte.dev/) with runes (`$state`, `$derived`, `$props`)
+- [SvelteKit](https://kit.svelte.dev/) (static site via `@sveltejs/adapter-static`)
+- [Svelte 5](https://svelte.dev/) with runes
 - [Tailwind CSS v4](https://tailwindcss.com/) via `@tailwindcss/vite`
 - TypeScript
 
+There is no backend.
+
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- npm
-
-### Install dependencies
+Needs Node.js 22.18 or later and npm.
 
 ```sh
 npm install
-```
-
-### Configure environment (optional)
-
-Copy `.env.example` to `.env.local` for local development. The app defaults to the production URL when the variable is unset:
-
-```sh
-cp .env.example .env.local
-```
-
-| Variable | Default | Description |
-|---|---|---|
-| `VITE_SMOKERS_API_BASE_URL` | `https://api.ctasmokers.com` | CTA Smokers API |
-
-### Develop
-
-```sh
-npm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-### Build
-
-```sh
-npm run build
-```
-
-Outputs a static site to `build/`. Serve with any static file host or preview locally:
-
-```sh
+npm run dev       # http://localhost:5173
+npm test          # unit tests (node --test)
+npm run check     # type-check
+npm run build     # static site in build/
 npm run preview
 ```
 
-### Type-check
+## Data
 
-```sh
-npm run check
-```
+`static/data/` holds the export of report counts. The archive is built from `daily.csv`; the other files are offered as downloads and the tests check that they agree with it.
+
+To use a later export, replace all the files in `static/data/` with the new ones, then run `npm test` and `npm run build`. Totals and the last date update from the data.
 
 ## Project Structure
 
 ```
 src/
-├── app.css                    Global styles (Tailwind import)
 ├── routes/
-│   ├── +layout.ts             Root layout config (prerender=false)
-│   ├── +layout.svelte         Navigation bar + shared layout
-│   ├── +page.ts               Home page config (ssr=false)
-│   ├── +page.svelte           Home page — active reports
-│   └── report/
-│       ├── +page.ts           Report page config (ssr=true, prerender=true)
-│       └── +page.svelte       Report submission form
+│   ├── +page.svelte        Report helper
+│   └── stats/              Archive
 └── lib/
-    ├── types.ts               Line enum, Station, report request/response types
-    ├── constants.ts           LINE_COLORS, LINE_TEXT_COLORS, LINE_DISPLAY_NAMES
-    ├── api.ts                 API client functions
-    └── cta-stops.json         CTA station data
+    ├── message.ts          Builds the Ride Safe text and sms: link
+    ├── counts.ts           Parses and totals the daily counts
+    ├── data.ts             Loads static/data/daily.csv at build time
+    ├── stations.ts         Station lists from cta-stops.json
+    └── components/         Leaderboard, trend chart, period controls
+unit/                       Tests
 ```
-
-## API
-
-The app consumes the CTA Smokers API (`https://api.ctasmokers.com`):
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/cta/reports/smoking/active` | Fetch active reports, newest first (cursor-paginated) |
-| `POST` | `/api/cta/reports/smoking` | Submit a new report |
-| `GET` | `/api/cta/reports/smoking/counts/{line}/{all-time\|year\|month\|week\|day}[/{value}]` | Report count for a line and period |
-| `GET` | `/api/cta/reports/smoking/counts/{line}/month/{yearMonth}/days` | Daily report counts for a month |
