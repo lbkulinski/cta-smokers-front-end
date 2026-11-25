@@ -110,6 +110,21 @@
 	<p class="text-sm text-[#bbb] mb-1">CTA Smokers no longer collects reports. This site is not run by NITA or the CTA.</p>
 	<p class="text-sm font-semibold text-[#e5e5e5] mb-4"><a href="tel:911" class="inline-flex items-center min-h-[32px] text-[#c60c30] underline underline-offset-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">Emergency? Call 911.</a></p>
 
+	<div class="bg-[#171717] border-2 border-[#c60c30] rounded-xl p-4 sm:p-6 mb-6">
+		<p class="text-sm text-[#e5e5e5] mb-3">Ride Safe is NITA's app for reporting safety concerns on CTA, Metra and Pace.</p>
+		<a
+			href={RIDE_SAFE.url}
+			target="_blank"
+			rel="noopener noreferrer"
+			class="block w-full bg-[#c60c30] text-white text-center font-bold py-4 text-lg rounded-lg hover:bg-[#a00828] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+		>
+			Get the Ride Safe app ↗
+		</a>
+	</div>
+
+	<h2 class="text-lg font-semibold text-[#e5e5e5] mb-1">Or report by text</h2>
+	<p class="text-sm text-[#888] mb-3">Fill this in and we'll draft the message for you.</p>
+
 	<form onsubmit={openText} oninput={() => (copyStatus = '')} onchange={() => (copyStatus = '')} class="bg-[#171717] border border-[#2a2a2a] rounded-xl p-4 sm:p-6 space-y-4 sm:space-y-5" novalidate>
 		{#if validationError}
 			<p
@@ -216,7 +231,7 @@
 		<div class="space-y-2">
 			<button
 				type="submit"
-				class="w-full bg-[#c60c30] text-white font-semibold py-3 text-base rounded-lg hover:bg-[#a00828] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+				class="w-full border border-[#c60c30] text-[#e5e5e5] font-semibold py-3 text-base rounded-lg hover:bg-[#2a1014] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
 			>
 				Open text to {RIDE_SAFE.textNumber}
 			</button>
@@ -232,7 +247,6 @@
 		</div>
 	</form>
 
-	<p class="mt-4 text-sm"><a href={RIDE_SAFE.url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center min-h-[32px] text-[#c60c30] underline underline-offset-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">Or get the Ride Safe app ↗</a></p>
 	<p class="mt-4 pt-4 border-t border-[#2a2a2a] text-sm text-[#bbb]">
 		{TOTAL_REPORTS} reports were submitted here in 2026. <a href="/stats" class="text-[#c60c30] underline underline-offset-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">See the archive →</a>
 	</p>

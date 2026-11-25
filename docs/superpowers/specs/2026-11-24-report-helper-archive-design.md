@@ -42,6 +42,8 @@ CTA Smokers stops collecting smoking reports. NITA's Ride Safe (app, or text 312
 
 ### `/` (helper)
 
+Updated 2026-11-24 after review of the built page: the Ride Safe app is the main way to report, so its link sits in a prominent card above the form, and the text helper follows under "Or report by text". This replaces the placement shown in the sketch.
+
 ```
 Report smoking to NITA Ride Safe
 CTA Smokers no longer collects reports. This site is not run by NITA or the CTA.

@@ -4,7 +4,8 @@ CTA Smokers used to collect reports of smoking on Chicago Transit Authority (CTA
 
 ## Features
 
-- **Report helper** — fill in line, destination, next station and car number, then open a drafted text to Ride Safe (312-313-9015) or copy it. Nothing is stored or sent by the site
+- **Ride Safe app link** — the main way to report, at the top of the home page
+- **Text helper** — fill in line, destination, next station and car number, then open a drafted text to Ride Safe (312-313-9015) or copy it. Nothing is stored or sent by the site
 - **Archive** — report counts by line for all time, year, month, week and day, with CSV downloads
 
 ## Tech Stack
