@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- On phones, the navigation links sit on the same row as the site name, and "See the archive" no longer wraps
+
 ## [3.0.0] - 2026-11-24
 
 CTA Smokers no longer collects reports. NITA's Ride Safe is the official way to report.

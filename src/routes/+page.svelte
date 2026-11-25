@@ -248,6 +248,6 @@
 	</form>
 
 	<p class="mt-4 pt-4 border-t border-[#2a2a2a] text-sm text-[#bbb]">
-		{TOTAL_REPORTS} reports were submitted here in 2026. <a href="/stats" class="text-[#c60c30] underline underline-offset-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">See the archive →</a>
+		{TOTAL_REPORTS} reports were submitted here in 2026. <a href="/stats" class="block w-fit mt-1 whitespace-nowrap text-[#c60c30] underline underline-offset-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">See the archive →</a>
 	</p>
 </div>
